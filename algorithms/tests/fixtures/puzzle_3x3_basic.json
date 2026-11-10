@@ -1,0 +1,32 @@
+{
+  "id": "test_3x3_basic",
+  "size": 3,
+  "characters": [
+    {"name": "Alice", "profession": "Cook",      "cell": "A1"},
+    {"name": "Bob",   "profession": "Guard",     "cell": "A2"},
+    {"name": "Cara",  "profession": "Painter",   "cell": "A3"},
+    {"name": "Dan",   "profession": "Farmer",    "cell": "B1"},
+    {"name": "Eve",   "profession": "Clerk",     "cell": "B2"},
+    {"name": "Finn",  "profession": "Detective", "cell": "B3"},
+    {"name": "Gina",  "profession": "Astronaut", "cell": "C1"},
+    {"name": "Hank",  "profession": "Cook",      "cell": "C2"},
+    {"name": "Ivy",   "profession": "Guard",     "cell": "C3"}
+  ],
+  "solution": {
+    "A1": "INNOCENT", "B1": "CRIMINAL", "C1": "INNOCENT",
+    "A2": "INNOCENT", "B2": "INNOCENT", "C2": "CRIMINAL",
+    "A3": "CRIMINAL", "B3": "INNOCENT", "C3": "INNOCENT"
+  },
+  "initially_revealed": ["B2"],
+  "clues": [
+    {"id": "clue_B2", "owner": "B2", "type": "AT_MOST",  "params": {"region": {"kind": "cells", "cells": ["A1", "A2"]}, "k": 0}},
+    {"id": "clue_A1", "owner": "A1", "type": "EXACTLY",  "params": {"region": {"kind": "row", "row": 1}, "k": 1}},
+    {"id": "clue_A2", "owner": "A2", "type": "FACT",     "params": {"person": "Gina", "status": "INNOCENT"}},
+    {"id": "clue_B1", "owner": "B1", "type": "EXACTLY",  "params": {"region": {"kind": "row", "row": 2}, "k": 1}},
+    {"id": "clue_C1", "owner": "C1", "type": "EXACTLY",  "params": {"region": {"kind": "col", "col": "C"}, "k": 1}},
+    {"id": "clue_C2", "owner": "C2", "type": "SAME",     "params": {"a": "Finn", "b": "Ivy"}},
+    {"id": "clue_B3", "owner": "B3", "type": "AT_LEAST", "params": {"region": {"kind": "col", "col": "A"}, "k": 1}},
+    {"id": "clue_A3", "owner": "A3", "type": "AT_MOST",  "params": {"region": {"kind": "col", "col": "A"}, "k": 1}},
+    {"id": "clue_C3", "owner": "C3", "type": "AT_MOST",  "params": {"region": {"kind": "neighbors", "of": "C3"}, "k": 2}}
+  ]
+}
