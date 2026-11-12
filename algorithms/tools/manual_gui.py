@@ -28,6 +28,7 @@ from typing import Any, Mapping, Optional
 
 from algorithms.agent.deduction_agent import find_forced
 from algorithms.agent.entailment import Classification, check_verdict, classify_all
+from algorithms.agent.hint import hint
 from algorithms.agent.knowledge_base import build_kb
 from algorithms.agent.public_state import PublicState, VerdictResult
 from algorithms.logic.clues import referenced_cells
@@ -94,6 +95,14 @@ def region_text(region: Mapping[str, Any]) -> str:
         return f"the neighbors of {region['of']}"
     if kind == "cells":
         return "{" + ", ".join(region["cells"]) + "}"
+    if kind == "corners":
+        return "the corners"
+    if kind == "edges":
+        return "the edges"
+    if kind == "between":
+        return f"the cells between {region['a']} and {region['b']}"
+    if kind == "common_neighbors":
+        return f"the common neighbors of {region['a']} and {region['b']}"
     return str(region)
 
 
@@ -105,11 +114,18 @@ def clue_text(clue: Clue) -> str:
         return f"{p['a']} and {p['b']} have the same status"
     if clue.type is ClueType.DIFFERENT:
         return f"{p['a']} and {p['b']} have different statuses"
+    noun = clue.counted_status.value.lower()  # "criminal" / "innocent"
+    if clue.type is ClueType.PARITY:
+        return f"An {p['parity'].lower()} number of {noun}s in {region_text(p['region'])}"
+    if clue.type is ClueType.COMPARE:
+        op = {"MORE": "More", "FEWER": "Fewer", "EQUAL": "As many"}[p["op"]]
+        joiner = "as" if p["op"] == "EQUAL" else "than"
+        return f"{op} {noun}s in {region_text(p['region_a'])} {joiner} in {region_text(p['region_b'])}"
     word = {ClueType.EXACTLY: "Exactly", ClueType.AT_LEAST: "At least", ClueType.AT_MOST: "At most"}[clue.type]
     k = p["k"]
     if clue.type in (ClueType.EXACTLY, ClueType.AT_MOST) and k == 0:
-        return f"No criminals in {region_text(p['region'])}"
-    return f"{word} {k} criminal{'s' if k != 1 else ''} in {region_text(p['region'])}"
+        return f"No {noun}s in {region_text(p['region'])}"
+    return f"{word} {k} {noun}{'s' if k != 1 else ''} in {region_text(p['region'])}"
 
 
 # ------------------------------------------------------------------------- widgets
@@ -386,20 +402,24 @@ class ManualGUI:
 
     def on_hint(self) -> None:
         state = self.state()
-        kb = build_kb(state)
+        if state.is_solved():
+            return
         try:
-            forced = find_forced(kb)
+            h = hint(state)
         except ValueError:
-            forced = None
             self.log("HINT  knowledge base is INCONSISTENT")
-        self.total_sat_calls += kb.sat_calls
-        if forced is not None:
-            self.selected = forced.cell
-            self.highlighted = set()
-            self.log(f"HINT  {forced.cell} ({state.board.character_at(forced.cell).name}) "
-                     f"can be proved {forced.status.value}")
-        elif not state.is_solved() and kb.is_consistent():
+            return
+        if h is None:
             self.log("HINT  nothing can be proved right now")
+        else:
+            self.total_sat_calls += h.sat_calls
+            self.selected = h.cell
+            self.highlighted = set()
+            for clue in state.revealed_clues:
+                if clue.id in h.clue_ids:
+                    self.highlighted |= set(referenced_cells(clue, state.board))
+            self.highlighted |= set(h.proved_cells)
+            self.log("HINT  " + h.message(state))
         self.refresh()
 
     def on_step(self) -> None:

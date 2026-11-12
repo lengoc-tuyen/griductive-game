@@ -1,0 +1,47 @@
+{
+  "id": "test_4x4_ext",
+  "size": 4,
+  "characters": [
+    {"name": "Abel", "profession": "Clerk", "cell": "A1"},
+    {"name": "Bea", "profession": "Astronaut", "cell": "B1"},
+    {"name": "Clara", "profession": "Astronaut", "cell": "C1"},
+    {"name": "Derek", "profession": "Detective", "cell": "D1"},
+    {"name": "Eliza", "profession": "Clerk", "cell": "A2"},
+    {"name": "Franz", "profession": "Astronaut", "cell": "B2"},
+    {"name": "Grant", "profession": "Guard", "cell": "C2"},
+    {"name": "Hannah", "profession": "Clerk", "cell": "D2"},
+    {"name": "Ivy", "profession": "Clerk", "cell": "A3"},
+    {"name": "Jonas", "profession": "Guard", "cell": "B3"},
+    {"name": "Karl", "profession": "Painter", "cell": "C3"},
+    {"name": "Leo", "profession": "Farmer", "cell": "D3"},
+    {"name": "Mara", "profession": "Farmer", "cell": "A4"},
+    {"name": "Noah", "profession": "Clerk", "cell": "B4"},
+    {"name": "Owen", "profession": "Painter", "cell": "C4"},
+    {"name": "Priya", "profession": "Cook", "cell": "D4"}
+  ],
+  "solution": {
+    "A1": "CRIMINAL", "B1": "CRIMINAL", "C1": "INNOCENT", "D1": "CRIMINAL",
+    "A2": "INNOCENT", "B2": "CRIMINAL", "C2": "INNOCENT", "D2": "CRIMINAL",
+    "A3": "CRIMINAL", "B3": "INNOCENT", "C3": "INNOCENT", "D3": "INNOCENT",
+    "A4": "CRIMINAL", "B4": "INNOCENT", "C4": "INNOCENT", "D4": "INNOCENT"
+  },
+  "initially_revealed": ["D4"],
+  "clues": [
+    {"id": "clue_A1", "owner": "A1", "type": "COMPARE", "params": {"region_a": {"kind": "common_neighbors", "a": "Franz", "b": "Ivy"}, "region_b": {"kind": "between", "a": "Ivy", "b": "Leo"}, "op": "EQUAL"}},
+    {"id": "clue_B1", "owner": "B1", "type": "EXACTLY", "params": {"region": {"kind": "cells", "cells": ["Abel", "Hannah", "Grant"]}, "k": 2}},
+    {"id": "clue_C1", "owner": "C1", "type": "EXACTLY", "params": {"region": {"kind": "corners"}, "counts": "INNOCENT", "k": 1}},
+    {"id": "clue_D1", "owner": "D1", "type": "EXACTLY", "params": {"region": {"kind": "neighbors", "of": "Grant"}, "counts": "INNOCENT", "k": 4}},
+    {"id": "clue_A2", "owner": "A2", "type": "COMPARE", "params": {"region_a": {"kind": "neighbors", "of": "Noah"}, "region_b": {"kind": "edges"}, "op": "FEWER"}},
+    {"id": "clue_B2", "owner": "B2", "type": "EXACTLY", "params": {"region": {"kind": "common_neighbors", "a": "Mara", "b": "Ivy"}, "k": 0}},
+    {"id": "clue_C2", "owner": "C2", "type": "SAME", "params": {"a": "Derek", "b": "Hannah"}},
+    {"id": "clue_D2", "owner": "D2", "type": "EXACTLY", "params": {"region": {"kind": "col", "col": "C"}, "counts": "INNOCENT", "k": 4}},
+    {"id": "clue_A3", "owner": "A3", "type": "FACT", "params": {"person": "Abel", "status": "CRIMINAL"}},
+    {"id": "clue_B3", "owner": "B3", "type": "SAME", "params": {"a": "Ivy", "b": "Bea"}},
+    {"id": "clue_C3", "owner": "C3", "type": "COMPARE", "params": {"region_a": {"kind": "cells", "cells": ["Hannah", "Abel", "Karl"]}, "region_b": {"kind": "between", "a": "Mara", "b": "Priya"}, "op": "FEWER", "counts": "INNOCENT"}},
+    {"id": "clue_D3", "owner": "D3", "type": "PARITY", "params": {"region": {"kind": "between", "a": "Ivy", "b": "Leo"}, "parity": "EVEN"}},
+    {"id": "clue_A4", "owner": "A4", "type": "AT_MOST", "params": {"region": {"kind": "between", "a": "Eliza", "b": "Hannah"}, "k": 1}},
+    {"id": "clue_B4", "owner": "B4", "type": "EXACTLY", "params": {"region": {"kind": "neighbors", "of": "Mara"}, "counts": "INNOCENT", "k": 2}},
+    {"id": "clue_C4", "owner": "C4", "type": "EXACTLY", "params": {"region": {"kind": "neighbors", "of": "Hannah"}, "counts": "INNOCENT", "k": 4}},
+    {"id": "clue_D4", "owner": "D4", "type": "EXACTLY", "params": {"region": {"kind": "neighbors", "of": "Priya"}, "k": 0}}
+  ]
+}

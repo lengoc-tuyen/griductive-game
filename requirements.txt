@@ -1,0 +1,2 @@
+# Only the Python standard library is used (tkinter for the GUI).
+# On macOS/Homebrew Python, tkinter comes from: brew install python-tk

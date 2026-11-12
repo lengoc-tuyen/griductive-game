@@ -21,7 +21,13 @@ DIFFERENT       ``{"a": "Abel", "b": "Bea"}``
 EXACTLY         ``{"region": <Region>, "k": 2}``
 AT_LEAST        ``{"region": <Region>, "k": 2}``
 AT_MOST         ``{"region": <Region>, "k": 2}``
+PARITY  (ext.)  ``{"region": <Region>, "parity": "ODD"}``  (``ODD`` / ``EVEN``)
+COMPARE (ext.)  ``{"region_a": <Region>, "region_b": <Region>, "op": "MORE"}``
+                (``MORE`` / ``FEWER`` / ``EQUAL``: criminals in A vs criminals in B)
 ==============  =================================================
+
+Counting clues (EXACTLY / AT_LEAST / AT_MOST / PARITY / COMPARE) count CRIMINALS by
+default; an optional ``"counts": "INNOCENT"`` param makes them count innocents instead.
 
 Region (resolved by ``algorithms.logic.regions``):
 
@@ -29,6 +35,12 @@ Region (resolved by ``algorithms.logic.regions``):
 * ``{"kind": "col", "col": "B"}``
 * ``{"kind": "neighbors", "of": "C2"}``  (``of`` may be a cell or a person name)
 * ``{"kind": "cells", "cells": ["A1", "B3"]}``  (items may be cells or person names)
+
+Advanced regions (extension, see ``regions.py``):
+
+* ``{"kind": "corners"}`` / ``{"kind": "edges"}``  (the 4 corners / every boundary cell)
+* ``{"kind": "between", "a": "Abel", "b": "Bea"}``  (strictly between two people on one line)
+* ``{"kind": "common_neighbors", "a": "Abel", "b": "Bea"}``
 """
 
 from __future__ import annotations
@@ -57,9 +69,15 @@ class ClueType(str, Enum):
     EXACTLY = "EXACTLY"
     AT_LEAST = "AT_LEAST"
     AT_MOST = "AT_MOST"
+    # extensions
+    PARITY = "PARITY"
+    COMPARE = "COMPARE"
 
 
+CORE_TYPES = frozenset({ClueType.FACT, ClueType.SAME, ClueType.DIFFERENT,
+                        ClueType.EXACTLY, ClueType.AT_LEAST, ClueType.AT_MOST})
 COUNTING_TYPES = frozenset({ClueType.EXACTLY, ClueType.AT_LEAST, ClueType.AT_MOST})
+EXTENSION_TYPES = frozenset({ClueType.PARITY, ClueType.COMPARE})
 
 
 # --------------------------------------------------------------------------- cells
@@ -191,6 +209,11 @@ class Clue:
 
     def to_dict(self) -> dict[str, Any]:
         return {"id": self.id, "owner": self.owner, "type": self.type.value, "params": dict(self.params)}
+
+    @property
+    def counted_status(self) -> Status:
+        """For counting clues: which status is counted (``params["counts"]``, default CRIMINAL)."""
+        return Status(self.params.get("counts", Status.CRIMINAL.value))
 
 
 def sort_row_major(cells: Iterable[str]) -> list[str]:

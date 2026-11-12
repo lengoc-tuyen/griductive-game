@@ -3,8 +3,8 @@
 import random
 import unittest
 
-from algorithms.sat import cnf
-from algorithms.sat.dpll import SATStatus, solve
+from algorithms.sat import cnf, heuristics
+from algorithms.sat.dpll import DPLLSolver, SATStatus, SolverTimeout, solve
 from algorithms.tests.helpers import brute_force_models
 
 
@@ -70,6 +70,48 @@ class TestDPLL(unittest.TestCase):
             self.assertEqual(r.is_sat, expected_sat, clauses)
             if r.is_sat:
                 self.assertTrue(satisfies(r.model, clauses), clauses)
+
+    def test_every_heuristic_vs_brute_force(self):
+        rng = random.Random(7)
+        for heuristic in heuristics.HEURISTICS:
+            for _ in range(150):
+                n = rng.randint(1, 8)
+                clauses = [[rng.choice((1, -1)) * rng.randint(1, n) for _ in range(rng.randint(1, 4))]
+                           for _ in range(rng.randint(1, 25))]
+                expected = next(brute_force_models(clauses, n), None) is not None
+                r = solve(clauses, num_vars=n, heuristic=heuristic)
+                self.assertEqual(r.is_sat, expected, (heuristic, clauses))
+                if r.is_sat:
+                    self.assertTrue(satisfies(r.model, clauses))
+
+    def test_solver_reusable_across_assumptions(self):
+        solver = DPLLSolver([[1, 2], [-1, 2]])
+        self.assertFalse(solver.solve([-2]).is_sat)
+        self.assertTrue(solver.solve([1]).is_sat)
+        self.assertTrue(solver.solve([-1]).is_sat)
+        self.assertTrue(solver.solve().is_sat)
+
+    def test_add_clause_blocks_models(self):
+        solver = DPLLSolver([[1, 2]], num_vars=2)
+        models = []
+        while (r := solver.solve()).is_sat:
+            models.append(r.model)
+            solver.add_clause([-v if val else v for v, val in r.model.items()])
+        self.assertEqual(len(models), 3)
+
+    def test_limits(self):
+        def p(i, h):
+            return 4 * i + h + 1
+        clauses = [[p(i, h) for h in range(4)] for i in range(5)]  # pigeonhole 5 -> 4
+        clauses += [[-p(i, h), -p(j, h)] for h in range(4) for i in range(5) for j in range(i + 1, 5)]
+        with self.assertRaises(SolverTimeout):
+            DPLLSolver(clauses).solve(max_decisions=3)
+        self.assertFalse(DPLLSolver(clauses).solve().is_sat)
+
+    def test_assumption_on_unused_variable(self):
+        self.assertTrue(solve([[1]], assumptions=[5]).is_sat)
+        with self.assertRaises(ValueError):
+            solve([[1]], assumptions=[0])
 
     def test_dimacs_roundtrip(self):
         clauses = [[1, -2], [2, 3], [-1]]

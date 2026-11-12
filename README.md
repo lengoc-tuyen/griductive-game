@@ -71,3 +71,31 @@ griductive-game/
 - **B**: chỉ nhận/trả CNF dạng `list[list[int]]`, không biết gì về game.
 - **C**: chỉ nhận `PublicState` từ Engine, **không** được đọc lời giải ẩn hay clue chưa lộ.
 - **D**: `GameEngine` là nơi duy nhất giữ lời giải; GUI gọi agent cho Hint / Auto Solve và để kiểm tra verdict.
+
+## Cài đặt & chạy
+
+Chỉ dùng thư viện chuẩn của Python (≥ 3.9); GUI dùng `tkinter`
+(macOS + Homebrew: `brew install python-tk`).
+
+```bash
+python -m unittest discover -s algorithms/tests -t .                 # toàn bộ test A + B + C
+python -m algorithms.tools.manual_gui [path/to/puzzle.json]           # GUI dev để test thuật toán
+```
+
+## Phần thuật toán (A + B + C) — tóm tắt
+
+- **Clue**: 6 loại core + 2 extension `PARITY` (chẵn/lẻ, XOR chain có biến phụ) và
+  `COMPARE` (so sánh số criminal giữa 2 vùng, unary counter có biến phụ) + region nâng cao
+  `corners`, `edges`, `between`, `common_neighbors`. Mọi clue đếm có thể đếm innocent bằng
+  `"counts": "INNOCENT"`. `evaluator.py` kiểm tra ngữ nghĩa trực tiếp, test chéo với encoder
+  trên mọi assignment 3×3.
+- **DPLL**: two-watched-literals + trail (không copy assignment), chọn biến theo thứ tự tĩnh
+  xác định (`lowest_index` / `most_occurrences` / `jeroslow_wang`), hỗ trợ assumptions,
+  `add_clause`, giới hạn thời gian / số decision.
+- **Agent**: phân loại CRIMINAL/INNOCENT/UNKNOWN/INCONSISTENT theo đúng định nghĩa entailment,
+  dùng lại model đã tìm được để bỏ bớt truy vấn thừa; `DeductionTrace` ghi từng bước + mọi truy
+  vấn SAT; `hint` trả về ô bị ép + tập clue tối thiểu chứng minh nó; `uniqueness` đếm nghiệm
+  bằng blocking clause trên biến chính.
+- **API cho D / E**: `GameEngine` gọi `entailment.check_verdict(public_state, cell, status)`;
+  Hint / Auto Solve dùng `hint.hint(state)` và `DeductionAgent().run(engine)`;
+  thí nghiệm dùng `AgentRun.summary()`; kiểm tra puzzle dùng `uniqueness.check_uniqueness`.

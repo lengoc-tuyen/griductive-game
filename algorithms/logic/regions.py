@@ -1,16 +1,20 @@
 """[A] Region resolution.
 
 ``resolve(region, board)`` turns a region spec into the list of cells it covers,
-sorted row-major, with no duplicates. Supported kinds: ``row``, ``col``,
+sorted row-major, with no duplicates. Required kinds: ``row``, ``col``,
 ``neighbors`` (8 directions, the cell itself excluded) and ``cells`` (explicit list).
-Advanced regions (corners, edges, between two people, ...) belong to extensions.
+
+Extension (advanced region expressions): ``corners``, ``edges`` (boundary cells),
+``between`` (cells strictly between two people on the same row/column - may be
+empty) and ``common_neighbors`` (cells adjacent to both of two people).
 """
 
 from __future__ import annotations
 
 from typing import Any, Mapping
 
-from algorithms.logic.models import Board, make_cell, parse_cell, sort_row_major
+from algorithms.logic.errors import ClueValidationError
+from algorithms.logic.models import Board, Clue, make_cell, parse_cell, sort_row_major
 
 
 class RegionError(ValueError):
@@ -69,11 +73,62 @@ def _cells(region: Mapping[str, Any], board: Board) -> list[str]:
     return sort_row_major(out)
 
 
+# ----------------------------------------------------------- advanced regions (extension)
+def _person(region: Mapping[str, Any], key: str, board: Board, kind: str) -> str:
+    try:
+        return board.ref_to_cell(region.get(key))
+    except (KeyError, TypeError) as e:
+        raise RegionError(f"{kind}: {e}") from None
+
+
+def _corners(region: Mapping[str, Any], board: Board) -> list[str]:
+    last = board.size - 1
+    return sort_row_major({make_cell(c, r) for c in (0, last) for r in (0, last)})
+
+
+def _edges(region: Mapping[str, Any], board: Board) -> list[str]:
+    last = board.size - 1
+    out = []
+    for cell in board.cells():
+        c, r = parse_cell(cell)
+        if c in (0, last) or r in (0, last):
+            out.append(cell)
+    return out
+
+
+def _between(region: Mapping[str, Any], board: Board) -> list[str]:
+    """Cells strictly between two people standing in the same row or column."""
+    a = _person(region, "a", board, "between")
+    b = _person(region, "b", board, "between")
+    (ca, ra), (cb, rb) = parse_cell(a), parse_cell(b)
+    if a == b:
+        raise RegionError("between: needs two different people")
+    if ra == rb:
+        return [make_cell(c, ra) for c in range(min(ca, cb) + 1, max(ca, cb))]
+    if ca == cb:
+        return [make_cell(ca, r) for r in range(min(ra, rb) + 1, max(ra, rb))]
+    raise RegionError(f"between: {a} and {b} are not in the same row or column")
+
+
+def _common_neighbors(region: Mapping[str, Any], board: Board) -> list[str]:
+    a = _person(region, "a", board, "common_neighbors")
+    b = _person(region, "b", board, "common_neighbors")
+    if a == b:
+        raise RegionError("common_neighbors: needs two different people")
+    return sort_row_major(set(neighbors_of(a, board)) & set(neighbors_of(b, board)))
+
+
 _RESOLVERS = {
+    # required
     "row": _row,
     "col": _col,
     "neighbors": _neighbors,
     "cells": _cells,
+    # extension: advanced region expressions
+    "corners": _corners,
+    "edges": _edges,
+    "between": _between,
+    "common_neighbors": _common_neighbors,
 }
 
 
@@ -90,3 +145,11 @@ def resolve(region: Mapping[str, Any], board: Board) -> list[str]:
     if resolver is None:
         raise RegionError(f"unknown region kind {kind!r}")
     return resolver(region, board)
+
+
+def clue_region(clue: Clue, board: Board, key: str = "region") -> list[str]:
+    """Resolve ``clue.params[key]``, reporting problems as ``ClueValidationError``."""
+    try:
+        return resolve(clue.params.get(key), board)
+    except RegionError as e:
+        raise ClueValidationError(f"{clue.id}: {key}: {e}") from None

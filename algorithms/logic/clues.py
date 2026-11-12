@@ -1,4 +1,4 @@
-"""[A] Validation of the 6 core clue templates.
+"""[A] Clue validation (core templates + extensions).
 
 ``validate(clue, board)`` raises ``ClueValidationError`` when parameters are wrong
 (unknown person, bad status, region error, k outside [0, |R|], ...).
@@ -8,12 +8,14 @@ use it to highlight a selected clue.
 
 from __future__ import annotations
 
-from algorithms.logic import regions
+from typing import Callable
+
+from algorithms.logic import extensions
+from algorithms.logic.errors import ClueValidationError
 from algorithms.logic.models import COUNTING_TYPES, Board, Clue, ClueType, Status
+from algorithms.logic.regions import clue_region
 
-
-class ClueValidationError(ValueError):
-    pass
+__all__ = ["ClueValidationError", "validate", "referenced_cells", "is_counting"]
 
 
 def _person_cell(clue: Clue, key: str, board: Board) -> str:
@@ -23,13 +25,6 @@ def _person_cell(clue: Clue, key: str, board: Board) -> str:
     try:
         return board.cell_of(name)
     except KeyError as e:
-        raise ClueValidationError(f"{clue.id}: {e}") from None
-
-
-def _region_cells(clue: Clue, board: Board) -> list[str]:
-    try:
-        return regions.resolve(clue.params.get("region"), board)
-    except regions.RegionError as e:
         raise ClueValidationError(f"{clue.id}: {e}") from None
 
 
@@ -51,20 +46,23 @@ def _validate_pair(clue: Clue, board: Board) -> list[str]:
 
 
 def _validate_counting(clue: Clue, board: Board) -> list[str]:
-    cells = _region_cells(clue, board)
+    cells = clue_region(clue, board)
+    extensions.validate_counted_status(clue)
     k = clue.params.get("k")
     if not isinstance(k, int) or isinstance(k, bool) or not (0 <= k <= len(cells)):
         raise ClueValidationError(f"{clue.id}: k must be an int in [0, {len(cells)}], got {k!r}")
     return cells
 
 
-_VALIDATORS = {
+_VALIDATORS: dict[ClueType, Callable[[Clue, Board], list[str]]] = {
     ClueType.FACT: _validate_fact,
     ClueType.SAME: _validate_pair,
     ClueType.DIFFERENT: _validate_pair,
     ClueType.EXACTLY: _validate_counting,
     ClueType.AT_LEAST: _validate_counting,
     ClueType.AT_MOST: _validate_counting,
+    ClueType.PARITY: extensions.validate_parity,
+    ClueType.COMPARE: extensions.validate_compare,
 }
 
 

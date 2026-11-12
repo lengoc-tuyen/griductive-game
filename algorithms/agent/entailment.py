@@ -4,6 +4,11 @@
     KB |= NOT C_i  <=>  KB AND C_i     is UNSAT   -> INNOCENT
     both SAT                                      -> UNKNOWN
     KB itself UNSAT                               -> INCONSISTENT
+
+Optimisation (same answers, fewer SAT calls): the consistency check already returns a
+model M of KB, and every later SAT answer returns another model. If M has C_i = True,
+then ``KB AND C_i`` is known to be SAT, so only ``KB AND NOT C_i`` has to be asked; and if
+the models seen so far contain both values of C_i, i is UNKNOWN without any query.
 """
 
 from __future__ import annotations
@@ -29,15 +34,23 @@ class Classification(str, Enum):
             return Status.INNOCENT
         return None
 
+    @classmethod
+    def of(cls, status: Status) -> "Classification":
+        return cls.CRIMINAL if Status(status) is Status.CRIMINAL else cls.INNOCENT
+
 
 def classify(kb: KnowledgeBase, cell: str) -> Classification:
     if not kb.is_consistent():
         return Classification.INCONSISTENT
+    if cell in kb.state.proved:
+        return Classification.of(kb.state.proved[cell])
+    seen = kb.witnessed(cell)
+    if len(seen) == 2:
+        return Classification.UNKNOWN
+    criminal_possible = True in seen        # exactly one value is witnessed here
     v = kb.var_map.var(cell)
-    if not kb.query([-v]).is_sat:
-        return Classification.CRIMINAL
-    if not kb.query([v]).is_sat:
-        return Classification.INNOCENT
+    if not kb.query([-v] if criminal_possible else [v]).is_sat:
+        return Classification.CRIMINAL if criminal_possible else Classification.INNOCENT
     return Classification.UNKNOWN
 
 
