@@ -1,0 +1,37 @@
+{
+  "id": "test_3x3_basic",
+  "size": 3,
+  "characters": [
+    { "cell": "A1", "name": "Alice", "profession": "Cook" },
+    { "cell": "B1", "name": "Bob", "profession": "Guard" },
+    { "cell": "C1", "name": "Clara", "profession": "Nurse" },
+    { "cell": "A2", "name": "David", "profession": "Baker" },
+    { "cell": "B2", "name": "Eve", "profession": "Clerk" },
+    { "cell": "C2", "name": "Frank", "profession": "Smith" },
+    { "cell": "A3", "name": "Grace", "profession": "Tailor" },
+    { "cell": "B3", "name": "Henry", "profession": "Miner" },
+    { "cell": "C3", "name": "Ivy", "profession": "Artist" }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "CRIMINAL",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL"
+  },
+  "initially_revealed": ["B2"],
+  "clues": [
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "EXACTLY",
+      "k": 0,
+      "cells": ["A1", "A2"],
+      "text": "There are no criminals in {A1, A2}."
+    }
+  ]
+}

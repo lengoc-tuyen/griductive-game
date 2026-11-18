@@ -1,0 +1,293 @@
+:root {
+  --bg-page: #F4F0E8;
+  --ink: #262420;
+  --card-down: #FAF7F2;
+  --innocent-bg: #EAF5EE;
+  --innocent-border: #22C55E;
+  --innocent-btn: #38A169;
+  --criminal-bg: #FDE8E7;
+  --criminal-border: #E0564B;
+  --criminal-btn: #E53E3E;
+  --highlight-ring: #F59E0B;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  border-bottom: 2px solid var(--ink);
+  background: #EFE9DD;
+}
+
+.brand {
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+select, .btn {
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #FFFDF9;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  font-size: 0.9rem;
+}
+
+.btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.btn.active-toggle {
+  background: #FDE68A;
+}
+
+.timer {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 4px 10px;
+  border: 1px dashed var(--ink);
+}
+
+.banner {
+  text-align: center;
+  padding: 8px 16px;
+  background: #E7E0D2;
+  border-bottom: 1px solid var(--ink);
+  font-weight: 500;
+}
+
+.banner.error {
+  background: var(--criminal-bg);
+  color: #9B1C1C;
+}
+
+.banner.success {
+  background: var(--innocent-bg);
+  color: #166534;
+}
+
+.layout {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--card-down);
+  border: 2px solid var(--ink);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.sidebar h3 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.sidebar ul {
+  padding-left: 18px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.sidebar li {
+  margin-bottom: 8px;
+}
+
+.progress-box {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink);
+}
+
+.board-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.board {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 640px;
+}
+
+.card {
+  position: relative;
+  min-height: 135px;
+  padding: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--card-down);
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card.innocent {
+  background: var(--innocent-bg);
+  border-color: var(--innocent-border);
+}
+
+.card.criminal {
+  background: var(--criminal-bg);
+  border-color: var(--criminal-border);
+}
+
+.card.highlighted {
+  outline: 4px solid var(--highlight-ring);
+  outline-offset: 2px;
+  opacity: 1 !important;
+}
+
+.card.dimmed {
+  opacity: 0.45;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.mark-dot {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: transparent;
+}
+
+.card-body {
+  text-align: center;
+  margin: auto 0;
+}
+
+.card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #57534E;
+}
+
+.clue-text {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(38, 36, 32, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-card {
+  background: var(--card-down);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 20px 24px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.badge {
+  font-weight: bold;
+  padding: 2px 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.prompt {
+  margin: 14px 0;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-innocent {
+  background: var(--innocent-btn);
+  color: white;
+}
+
+.btn-criminal {
+  background: var(--criminal-btn);
+  color: white;
+}

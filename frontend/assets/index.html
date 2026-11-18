@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Griductive — Barebone Web UI</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Griductive</div>
+    <div class="controls">
+      <select id="puzzle-select" title="Select Puzzle">
+        <option value="test_3x3_basic">test_3x3_basic (3x3)</option>
+      </select>
+      <label class="btn" for="file-upload">Load JSON</label>
+      <input type="file" id="file-upload" accept=".json" hidden />
+      <button id="btn-restart" class="btn">Restart</button>
+      <button id="btn-mark" class="btn">Mark: OFF</button>
+      <span id="timer" class="timer">00:00</span>
+    </div>
+  </header>
+
+  <div id="status-banner" class="banner">Click a face-down card to judge Innocent or Criminal.</div>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <h3>HOW TO PLAY</h3>
+      <ul>
+        <li><strong>Face-down card:</strong> Click to judge <em>Innocent</em> or <em>Criminal</em>.</li>
+        <li><strong>Face-up card:</strong> Click to highlight cells referenced by its clue.</li>
+        <li><strong>Mark mode:</strong> Toggle to add colored draft notes on face-down cards.</li>
+        <li><strong>No guessing:</strong> Only logically forced verdicts are accepted.</li>
+      </ul>
+      <div class="progress-box">
+        Progress: <strong id="progress-text">0 / 0</strong>
+      </div>
+    </aside>
+
+    <section class="board-area">
+      <div id="board" class="board"></div>
+    </section>
+  </main>
+
+  <!-- Verdict Modal -->
+  <div id="verdict-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="modal-cell" class="badge">A1</span>
+        <button id="modal-close" class="close-btn">&times;</button>
+      </div>
+      <h2 id="modal-name">Alice</h2>
+      <p id="modal-prof" class="mono">Cook</p>
+      <p class="prompt">Innocent or criminal?</p>
+      <div class="modal-actions">
+        <button id="btn-innocent" class="btn btn-innocent">Innocent</button>
+        <button id="btn-criminal" class="btn btn-criminal">Criminal</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
