@@ -1,0 +1,189 @@
+{
+  "id": "puzzle_3x3_medium_05",
+  "size": 3,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Tailor",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Judge",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Doctor",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Astronaut",
+      "cell": "A2"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Nurse",
+      "cell": "B2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Musician",
+      "cell": "C2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Engineer",
+      "cell": "A3"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Mechanic",
+      "cell": "B3"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Pilot",
+      "cell": "C3"
+    }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "INNOCENT",
+    "A3": "CRIMINAL",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL"
+  },
+  "initially_revealed": [
+    "B2"
+  ],
+  "clues": [
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "SAME",
+      "params": {
+        "a": "Hannah",
+        "b": "Eliza"
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "cells",
+          "cells": [
+            "B2",
+            "C1",
+            "C2"
+          ]
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "B2"
+        },
+        "k": 3
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 3
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "B"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "cells",
+          "cells": [
+            "A2",
+            "B3",
+            "C1"
+          ]
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 2
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Abel",
+        "b": "Ivy"
+      }
+    },
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "A"
+        },
+        "k": 1
+      }
+    }
+  ],
+  "difficulty": "MEDIUM",
+  "metadata": {
+    "difficulty_score": 27.42,
+    "calculated_difficulty": "MEDIUM",
+    "criminal_count": 3,
+    "criminal_ratio": 0.333,
+    "solve_steps": 8,
+    "dpll_decisions": 13,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 153,
+    "dpll_runtime_s": 0.00524
+  }
+}

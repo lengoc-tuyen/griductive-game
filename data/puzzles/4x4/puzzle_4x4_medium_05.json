@@ -1,0 +1,307 @@
+{
+  "id": "puzzle_4x4_medium_05",
+  "size": 4,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Musician",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Scientist",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Librarian",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Photographer",
+      "cell": "D1"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Guard",
+      "cell": "A2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Judge",
+      "cell": "B2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Electrician",
+      "cell": "C2"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Teacher",
+      "cell": "D2"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Clerk",
+      "cell": "A3"
+    },
+    {
+      "name": "Jonas",
+      "profession": "Nurse",
+      "cell": "B3"
+    },
+    {
+      "name": "Karl",
+      "profession": "Lawyer",
+      "cell": "C3"
+    },
+    {
+      "name": "Leo",
+      "profession": "Sailor",
+      "cell": "D3"
+    },
+    {
+      "name": "Mara",
+      "profession": "Baker",
+      "cell": "A4"
+    },
+    {
+      "name": "Noah",
+      "profession": "Engineer",
+      "cell": "B4"
+    },
+    {
+      "name": "Owen",
+      "profession": "Tailor",
+      "cell": "C4"
+    },
+    {
+      "name": "Priya",
+      "profession": "Detective",
+      "cell": "D4"
+    }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "INNOCENT",
+    "C1": "INNOCENT",
+    "D1": "CRIMINAL",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "INNOCENT",
+    "D2": "INNOCENT",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "INNOCENT",
+    "D3": "CRIMINAL",
+    "A4": "INNOCENT",
+    "B4": "CRIMINAL",
+    "C4": "CRIMINAL",
+    "D4": "INNOCENT"
+  },
+  "initially_revealed": [
+    "C3",
+    "A3"
+  ],
+  "clues": [
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "SAME",
+      "params": {
+        "a": "Mara",
+        "b": "Karl"
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "cells",
+          "cells": [
+            "A3",
+            "B4",
+            "C3"
+          ]
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_A4",
+      "owner": "A4",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Leo",
+        "b": "Mara"
+      }
+    },
+    {
+      "id": "clue_B4",
+      "owner": "B4",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "B4"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D3",
+      "owner": "D3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "cells",
+          "cells": [
+            "A4",
+            "C4",
+            "D3"
+          ]
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 4
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_C4",
+      "owner": "C4",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Abel",
+        "b": "Owen"
+      }
+    },
+    {
+      "id": "clue_D4",
+      "owner": "D4",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "A"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "B3"
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Derek",
+        "b": "Eliza"
+      }
+    },
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "SAME",
+      "params": {
+        "a": "Hannah",
+        "b": "Franz"
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "A2"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_D1",
+      "owner": "D1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "B"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "C1"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D2",
+      "owner": "D2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "neighbors",
+          "of": "D2"
+        },
+        "k": 2
+      }
+    }
+  ],
+  "difficulty": "MEDIUM",
+  "metadata": {
+    "difficulty_score": 29.34,
+    "calculated_difficulty": "MEDIUM",
+    "criminal_count": 4,
+    "criminal_ratio": 0.25,
+    "solve_steps": 14,
+    "dpll_decisions": 0,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 602,
+    "dpll_runtime_s": 0.00976
+  }
+}
