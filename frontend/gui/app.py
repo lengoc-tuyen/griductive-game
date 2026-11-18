@@ -67,6 +67,7 @@ class GriductiveWebService:
         items: list[dict[str, Any]] = []
         seen_paths: set[Path] = set()
         search_roots = [PUZZLES_DIR, FIXTURES_DIR]
+        diff_rank = {"basic": 0, "easy": 1, "medium": 2, "hard": 3}
 
         for root in search_roots:
             if not root.exists():
@@ -82,16 +83,25 @@ class GriductiveWebService:
                     rel = path.relative_to(REPO_ROOT).as_posix()
                     pid = str(data.get("id") or path.stem)
                     size = int(data.get("size", 0))
+                    low = pid.lower()
+                    difficulty = "custom"
+                    for d in ("easy", "medium", "hard", "basic"):
+                        if d in low:
+                            difficulty = d
+                            break
+                    label = pid.replace("puzzle_", "").replace("_", " ").title()
                     items.append(
                         {
                             "id": pid,
-                            "name": f"{pid} ({size}x{size})",
+                            "name": f"{label} ({size}x{size})",
                             "size": size,
+                            "difficulty": difficulty,
                             "path": rel,
                         }
                     )
                 except Exception:
                     continue
+        items.sort(key=lambda x: (x["size"], diff_rank.get(x["difficulty"], 9), x["id"]))
         return items
 
     def get_state(self) -> dict[str, Any]:

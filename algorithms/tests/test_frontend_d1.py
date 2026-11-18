@@ -43,6 +43,42 @@ class TestClueRenderer(unittest.TestCase):
         self.assertIn("Exactly 1 criminal in row 1", render_clue_text(e_clue, self.board))
         self.assertEqual(get_highlight_cells(e_clue, self.board), ["A1", "B1", "C1"])
 
+    def test_render_innocent_counting_and_extensions(self) -> None:
+        inn_clue = Clue(
+            "c6",
+            "A1",
+            ClueType.EXACTLY,
+            {"region": {"kind": "row", "row": 2}, "counts": "INNOCENT", "k": 2},
+        )
+        self.assertEqual(render_clue_text(inn_clue, self.board), "Exactly 2 innocents in row 2.")
+
+        parity_clue = Clue(
+            "c7",
+            "A1",
+            ClueType.PARITY,
+            {"region": {"kind": "corners"}, "counts": "CRIMINAL", "parity": "ODD"},
+        )
+        self.assertEqual(
+            render_clue_text(parity_clue, self.board),
+            "Odd number of criminals in the corners.",
+        )
+
+        cmp_clue = Clue(
+            "c8",
+            "A1",
+            ClueType.COMPARE,
+            {
+                "region_a": {"kind": "row", "row": 1},
+                "region_b": {"kind": "col", "col": "C"},
+                "counts": "INNOCENT",
+                "op": "MORE",
+            },
+        )
+        self.assertEqual(
+            render_clue_text(cmp_clue, self.board),
+            "Row 1 has more innocents than column C.",
+        )
+
 
 class TestGameEngine(unittest.TestCase):
     def setUp(self) -> None:

@@ -26,7 +26,11 @@ from algorithms.agent.public_state import PublicState, VerdictResult
 from algorithms.logic.clues import validate as validate_clue
 from algorithms.logic.models import Board, Clue, Status, parse_cell
 from frontend.engine.verdict import VerdictOutcome
-from frontend.gui.clue_renderer import get_highlight_cells, render_clue_text
+from frontend.gui.clue_renderer import (
+    get_highlight_cells,
+    render_clue_text,
+    render_clue_visuals,
+)
 
 
 class GameEngine:
@@ -131,12 +135,16 @@ class GameEngine:
     def _clue_dict(self, clue: Optional[Clue]) -> Optional[dict[str, Any]]:
         if clue is None:
             return None
+        visuals = render_clue_visuals(clue, self.board)
         return {
             "id": clue.id,
             "owner": clue.owner,
             "type": clue.type.value,
-            "text": render_clue_text(clue, self.board),
+            "text": visuals["text"],
+            "clue_color": visuals["primary_color"],
+            "clue_segments": visuals["segments"],
             "highlight_cells": get_highlight_cells(clue, self.board),
+            "highlight_groups": visuals["highlight_groups"],
         }
 
     # --------------------------------------------------------- Web API actions
@@ -213,6 +221,7 @@ class GameEngine:
             is_revealed = cell in self._proved
             status = self._proved.get(cell)
             clue = self.revealed_clue_at(cell) if is_revealed else None
+            visuals = render_clue_visuals(clue, self.board) if clue is not None else None
             cards.append(
                 {
                     "cell": cell,
@@ -223,8 +232,11 @@ class GameEngine:
                     "is_revealed": is_revealed,
                     "status": status.value if status is not None else None,
                     "clue_id": clue.id if clue is not None else None,
-                    "clue_text": render_clue_text(clue, self.board) if clue is not None else None,
+                    "clue_text": visuals["text"] if visuals is not None else None,
+                    "clue_color": visuals["primary_color"] if visuals is not None else None,
+                    "clue_segments": visuals["segments"] if visuals is not None else [],
                     "highlight_cells": get_highlight_cells(clue, self.board) if clue is not None else [],
+                    "highlight_groups": visuals["highlight_groups"] if visuals is not None else [],
                 }
             )
 

@@ -3,62 +3,231 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Griductive — Barebone Web UI</title>
+  <title>Griductive — Logic Deduction Puzzle</title>
+  <link rel="icon" href="img/logo.png" type="image/png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">Griductive</div>
-    <div class="controls">
-      <select id="puzzle-select" title="Select Puzzle">
-        <option value="test_3x3_basic">test_3x3_basic (3x3)</option>
-      </select>
-      <label class="btn" for="file-upload">Load JSON</label>
+    <div class="brand">
+      <img src="img/logo.png" alt="Griductive Logo" class="brand-logo" />
+      <span>Griductive</span>
+    </div>
+
+    <div class="topbar-controls">
+      <button id="btn-puzzle-picker" class="pill-btn picker-trigger-btn" type="button" title="Browse and select puzzles">
+        <span class="picker-grid-icon" aria-hidden="true">⊞</span>
+        <span id="picker-btn-label">Select Puzzle</span>
+        <span class="picker-caret" aria-hidden="true">▾</span>
+      </button>
       <input type="file" id="file-upload" accept=".json" hidden />
-      <button id="btn-restart" class="btn">Restart</button>
-      <button id="btn-mark" class="btn">Mark: OFF</button>
-      <span id="timer" class="timer">00:00</span>
+
+      <div class="timer-group">
+        <div class="timer-pill" title="Elapsed Time">
+          <span id="timer-dot" class="timer-dot"></span>
+          <span id="timer">00:00</span>
+        </div>
+        <button id="btn-pause" class="pause-icon-btn" type="button" title="Pause game (P)" aria-label="Pause game">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <rect x="6" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
+            <rect x="14" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <div id="status-banner" class="banner">Click a face-down card to judge Innocent or Criminal.</div>
-
-  <main class="layout">
+  <main id="page-layout" class="page-layout">
+    <!-- Left Sidebar (Knotwise editorial info + Revealed Clues quick list) -->
     <aside class="sidebar">
-      <h3>HOW TO PLAY</h3>
-      <ul>
-        <li><strong>Face-down card:</strong> Click to judge <em>Innocent</em> or <em>Criminal</em>.</li>
-        <li><strong>Face-up card:</strong> Click to highlight cells referenced by its clue.</li>
-        <li><strong>Mark mode:</strong> Toggle to add colored draft notes on face-down cards.</li>
-        <li><strong>No guessing:</strong> Only logically forced verdicts are accepted.</li>
-      </ul>
-      <div class="progress-box">
-        Progress: <strong id="progress-text">0 / 0</strong>
+      <div class="sidebar-hero">
+        <div class="sidebar-title-row">
+          <img src="img/logo.png" alt="Griductive Logo" class="hero-logo" />
+          <h1>Griductive</h1>
+        </div>
+        <div class="meta-badges">
+          <span id="meta-size" class="meta-pill">3 × 3</span>
+          <span id="meta-diff" class="meta-pill meta-pill-muted">BASIC</span>
+        </div>
+        <p class="sidebar-subtitle">A no-guess grid-deduction logic puzzle.</p>
       </div>
+
+      <section class="sidebar-section">
+        <h3>HOW TO PLAY</h3>
+        <ul class="rules-list">
+          <li>Every person is <strong>Criminal</strong> or <strong>Innocent</strong>, and every revealed clue is <strong>true</strong>.</li>
+          <li>Tap a face-down suspect to call their verdict — no guessing!</li>
+          <li>Tap a revealed clue to focus its cells (<strong>Shift + Click</strong> to compare multiple clues).</li>
+          <li><strong>Press &amp; hold</strong> a clue to cross it off once solved.</li>
+        </ul>
+      </section>
+
+      <section class="sidebar-section progress-section">
+        <div class="progress-header">
+          <span>PROGRESS</span>
+          <strong id="progress-text">0 / 0</strong>
+        </div>
+        <div class="progress-track">
+          <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </section>
+
+      <section class="sidebar-section clues-section">
+        <div class="section-header-row">
+          <h3>REVEALED CLUES</h3>
+          <span id="clues-count" class="count-chip">0</span>
+        </div>
+        <div id="revealed-clues-list" class="clues-list"></div>
+      </section>
     </aside>
 
-    <section class="board-area">
-      <div id="board" class="board"></div>
+    <!-- Main Board Stage -->
+    <section class="board-stage">
+      <div id="board-wrapper" class="board-wrapper">
+        <div id="col-headers" class="col-headers"></div>
+        <div class="board-body-row">
+          <div id="row-headers" class="row-headers"></div>
+          <div id="board" class="board"></div>
+        </div>
+      </div>
+
+      <!-- Tactile Retro Pill Action Bar (Knotwise bottom bar) -->
+      <div class="bottom-bar">
+        <button id="btn-mark" class="pill-btn action-pill" type="button" title="Toggle pencil note tags on face-down cards">
+          <span class="btn-icon">✏️</span>
+          <span id="mark-label">Mark</span>
+        </button>
+        <button id="btn-clear-marks" class="pill-btn action-pill" type="button" title="Clear all pencil notes">
+          <span class="btn-icon">🧹</span>
+          <span>Clear Marks</span>
+        </button>
+        <button id="btn-restart" class="pill-btn action-pill" type="button" title="Restart current puzzle">
+          <span class="btn-icon">↺</span>
+          <span>Restart</span>
+        </button>
+        <!-- TODO [For C - Deduction Agent owner]: Add Hint / Auto Solve pill buttons here -->
+      </div>
+
+      <div id="mark-legend" class="mark-legend hidden">
+        <span>Mark mode ON — click face-down cards to cycle tags:</span>
+        <span class="legend-swatch" style="background:#F97066" title="Red"></span>
+        <span class="legend-swatch" style="background:#32D583" title="Green"></span>
+        <span class="legend-swatch" style="background:#FDB022" title="Yellow"></span>
+        <span class="legend-swatch" style="background:#70B8FF" title="Blue"></span>
+      </div>
     </section>
   </main>
 
-  <!-- Verdict Modal -->
-  <div id="verdict-modal" class="modal hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <span id="modal-cell" class="badge">A1</span>
-        <button id="modal-close" class="close-btn">&times;</button>
+  <!-- Verdict Modal (Knotwise style) -->
+  <div id="verdict-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+    <div class="modal-card verdict-modal-card">
+      <div id="modal-avatar" class="modal-avatar"></div>
+      <h2 id="modal-name" class="verdict-suspect-name">Alice</h2>
+      <p id="modal-meta" class="verdict-suspect-meta">A1 · Cook</p>
+      <h3 class="serif-prompt">Innocent or criminal?</h3>
+      <p class="verdict-helper">
+        You can only lock a verdict the clues actually prove — a correct call flips them and reveals their statement.
+      </p>
+      <div class="modal-actions verdict-actions">
+        <button id="btn-innocent" class="verdict-btn btn-innocent" type="button">Innocent</button>
+        <button id="btn-criminal" class="verdict-btn btn-criminal" type="button">Criminal</button>
       </div>
-      <h2 id="modal-name">Alice</h2>
-      <p id="modal-prof" class="mono">Cook</p>
-      <p class="prompt">Innocent or criminal?</p>
-      <div class="modal-actions">
-        <button id="btn-innocent" class="btn btn-innocent">Innocent</button>
-        <button id="btn-criminal" class="btn btn-criminal">Criminal</button>
+      <button id="btn-cancel-modal" class="cancel-link" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Error / Rejected Verdict Modal (Knotwise "Conclusion not possible" style — single Keep looking button) -->
+  <div id="error-modal" class="modal hidden" role="alertdialog" aria-modal="true" aria-labelledby="error-title">
+    <div class="modal-card notice-modal-card">
+      <div id="error-icon-circle" class="notice-icon-circle warning">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+      <h2 id="error-title" class="serif-heading">Conclusion not possible</h2>
+      <p id="error-body" class="notice-body"></p>
+      <div class="notice-actions">
+        <button id="btn-keep-looking" class="coral-action-btn" type="button">Keep looking</button>
       </div>
     </div>
   </div>
 
+  <!-- Pause Game Modal (Knotwise "Paused" style) -->
+  <div id="pause-modal" class="modal modal-blur hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+    <div class="modal-card pause-modal-card">
+      <div class="pause-icon-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <rect x="6" y="4.5" width="4" height="15" rx="1.2" fill="#262420" />
+          <rect x="14" y="4.5" width="4" height="15" rx="1.2" fill="#262420" />
+        </svg>
+      </div>
+      <h2 id="pause-title" class="serif-heading">Paused</h2>
+      <p class="notice-body pause-body">
+        You've spent <strong id="pause-time" class="mono-time">00:00</strong> on this grid. Take your time.
+      </p>
+      <div class="notice-actions">
+        <button id="btn-resume" class="coral-action-btn resume-btn" type="button">
+          <span class="play-tri">▶</span>
+          <span>Resume</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Puzzle Picker Modal (Option 2: Size Tabs + Difficulty Cards + Solved Records + Load JSON) -->
+  <div id="puzzle-picker-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+    <div class="modal-card picker-modal-card">
+      <div class="picker-header">
+        <div class="picker-header-text">
+          <h2 id="picker-title" class="serif-heading picker-heading">Select Puzzle</h2>
+          <p class="picker-subtitle">Choose a grid size and difficulty level, or load your own JSON.</p>
+        </div>
+        <button id="btn-picker-close" class="picker-close-btn" type="button" aria-label="Close">&times;</button>
+      </div>
+
+      <div id="picker-size-tabs" class="picker-tabs" role="tablist"></div>
+      <div id="picker-puzzle-grid" class="picker-grid"></div>
+
+      <div class="picker-footer">
+        <label class="pill-btn picker-upload-btn" for="file-upload" title="Upload a custom puzzle JSON file">
+          <span>📂 Load Custom JSON</span>
+        </label>
+        <button id="btn-picker-cancel" class="cancel-link" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Overlay Modal -->
+  <div id="victory-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card victory-card">
+      <div class="victory-emoji">🎉</div>
+      <h2 class="serif-heading">Case Closed!</h2>
+      <p class="victory-sub">Every character was deduced with pure logic — zero guesses.</p>
+      <div class="victory-stats">
+        <div class="v-stat">
+          <span class="v-label">PUZZLE</span>
+          <strong id="victory-puzzle">-</strong>
+        </div>
+        <div class="v-stat">
+          <span class="v-label">TIME</span>
+          <strong id="victory-time">00:00</strong>
+        </div>
+        <div class="v-stat">
+          <span class="v-label">DEDUCED</span>
+          <strong id="victory-count">0 / 0</strong>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-victory-next" class="verdict-btn btn-innocent" type="button">Next Puzzle →</button>
+        <button id="btn-victory-replay" class="pill-btn" type="button">Play Again</button>
+      </div>
+      <button id="btn-victory-close" class="cancel-link" type="button">View Board</button>
+    </div>
+  </div>
+
+  <script src="js/avatars.js"></script>
   <script src="js/api.js"></script>
   <script src="js/board.js"></script>
   <script src="js/main.js"></script>
