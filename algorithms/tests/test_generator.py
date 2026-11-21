@@ -8,10 +8,12 @@ import random
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from algorithms.agent.deduction_agent import AgentOutcome, DeductionAgent
-from algorithms.agent.uniqueness import check_uniqueness
+from algorithms.agent.uniqueness import Uniqueness, check_uniqueness
 from algorithms.logic.models import Board, Clue, ClueType, Status
+from algorithms.logic.regions import clue_region
 from algorithms.tests.helpers import FakeEngine, load_fixture
 from data.puzzle_loader import Puzzle, PuzzleValidationError, load_puzzle, save_puzzle
 from data.scripts.cross_checker import (
@@ -22,8 +24,10 @@ from data.scripts.cross_checker import (
     pysat_verify,
     z3_verify,
 )
-from data.scripts.generate_puzzles import generate_single_puzzle, minimize_clues
+from data.scripts.generate_puzzles import clue_signature, generate_single_puzzle, minimize_clues
 from data.scripts.names_pool import DEFAULT_NAMES, generate_characters
+from data.scripts.run_experiments import HEURISTICS, run_agent_with_heuristic
+from data.scripts.verify_puzzles import verify_puzzle_file
 
 FIXTURE_3X3 = "puzzle_3x3_basic.json"
 
@@ -169,6 +173,73 @@ class TestGenerator(unittest.TestCase):
         engine = FakeEngine(minimized.to_dict())
         run = DeductionAgent().run(engine)
         self.assertEqual(run.outcome, AgentOutcome.SOLVED)
+
+    def test_generated_hard_puzzle_no_duplicates_and_valid_compare(self):
+        rng = random.Random(402)
+        puzzle, run = generate_single_puzzle(
+            size=4,
+            difficulty="HARD",
+            puzzle_id="test_hard_4x4_ext",
+            require_extensions=True,
+            rng=rng,
+        )
+        self.assertEqual(run.outcome, AgentOutcome.SOLVED)
+        sigs = [clue_signature(cl, puzzle.board) for cl in puzzle.clues]
+        self.assertEqual(len(sigs), len(set(sigs)))
+        for cl in puzzle.clues:
+            if cl.type is ClueType.COMPARE:
+                ra = clue_region(cl, puzzle.board, "region_a")
+                rb = clue_region(cl, puzzle.board, "region_b")
+                self.assertGreaterEqual(len(ra), 2)
+                self.assertGreaterEqual(len(rb), 2)
+
+
+class TestPartEVerificationAndBenchmarks(unittest.TestCase):
+    def test_verify_puzzles_reports_skip_when_no_crosscheck_tier(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            pz_path = Path(tmpdir) / "tmp_3x3.json"
+            pz_path.write_text(json.dumps(load_fixture(FIXTURE_3X3)), encoding="utf-8")
+            with mock.patch("data.scripts.verify_puzzles.cross_check_all", return_value={}):
+                res = verify_puzzle_file(pz_path)
+            self.assertEqual(res["overall"], "PASS")
+            self.assertEqual(res["cross_check_status"], "SKIP")
+            self.assertTrue(res["cross_check_ok"])
+
+    def test_edge_cases_expected_outcomes(self):
+        edge_dir = Path("data/edge_cases")
+        expected = {
+            "case_3x3_stuck_missing_clues": (AgentOutcome.STUCK, Uniqueness.MULTIPLE),
+            "case_4x4_stuck_ambiguous": (AgentOutcome.STUCK, Uniqueness.MULTIPLE),
+            "case_3x3_inconsistent_conflict": (AgentOutcome.INCONSISTENT, Uniqueness.NO_SOLUTION),
+            "case_4x4_inconsistent_cardinality": (AgentOutcome.INCONSISTENT, Uniqueness.NO_SOLUTION),
+            "case_5x5_stress_extensions": (AgentOutcome.SOLVED, Uniqueness.UNIQUE),
+        }
+        for name, (exp_out, exp_uniq) in expected.items():
+            pz = load_puzzle(edge_dir / f"{name}.json")
+            known = {c: pz.solution[c] for c in pz.initially_revealed}
+            u = check_uniqueness(pz.board, pz.clues, known)
+            run = DeductionAgent(time_limit=30.0).run(FakeEngine(pz.to_dict()))
+            self.assertEqual(u.status, exp_uniq, name)
+            self.assertEqual(run.outcome, exp_out, name)
+
+        stress = load_puzzle(edge_dir / "case_5x5_stress_extensions.json")
+        timeout_run = DeductionAgent(time_limit=0.0).run(FakeEngine(stress.to_dict()))
+        self.assertEqual(timeout_run.outcome, AgentOutcome.TIMEOUT)
+        step_run = DeductionAgent(max_steps=5, time_limit=30.0).run(FakeEngine(stress.to_dict()))
+        self.assertEqual(step_run.outcome, AgentOutcome.STEP_LIMIT)
+
+    def test_heuristic_benchmark_runner_consistent(self):
+        puzzle = Puzzle.from_dict(load_fixture(FIXTURE_3X3))
+        steps_list = []
+        for h in HEURISTICS:
+            engine = FakeEngine(puzzle.to_dict())
+            run = run_agent_with_heuristic(engine, heuristic=h, time_limit=10.0)
+            self.assertEqual(run.outcome, AgentOutcome.SOLVED)
+            steps_list.append(len(run.steps))
+            s = run.summary()
+            for key in ("primary_vars", "aux_vars", "clauses", "sat_calls", "decisions", "propagations", "backtracks", "steps", "runtime"):
+                self.assertIn(key, s)
+        self.assertEqual(len(set(steps_list)), 1)
 
 
 if __name__ == "__main__":
