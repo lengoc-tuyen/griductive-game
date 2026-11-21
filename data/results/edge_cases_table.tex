@@ -1,0 +1,17 @@
+\begin{table}[h!]
+\centering
+\scriptsize
+\begin{tabular}{|l|c|l|l|l|r|r|r|r|}
+\hline
+\textbf{Case ID} & \textbf{Size} & \textbf{Scenario} & \textbf{Outcome} & \textbf{Uniqueness} & \textbf{Steps} & \textbf{Calls} & \textbf{Dec} & \textbf{Time (s)} \\ \hline
+case\_3x3\_inconsistent\_conflict & 3x3 & contradictory\_clues & INCONSISTENT & NO_SOLUTION & 0 & 1 & 0 & 0.00010 \\ \hline
+case\_3x3\_stuck\_missing\_clues & 3x3 & missing\_clues & STUCK & MULTIPLE & 0 & 8 & 7 & 0.00038 \\ \hline
+case\_4x4\_inconsistent\_cardinality & 4x4 & contradictory\_clues & INCONSISTENT & NO_SOLUTION & 0 & 1 & 0 & 0.00018 \\ \hline
+case\_4x4\_stuck\_ambiguous & 4x4 & missing\_clues & STUCK & MULTIPLE & 2 & 35 & 0 & 0.00250 \\ \hline
+case\_5x5\_stress\_extensions & 5x5 & stress\_normal\_30s & SOLVED & UNIQUE & 23 & 161 & 313 & 0.45994 \\ \hline
+case\_5x5\_stress\_extensions & 5x5 & tight\_time\_limit\_0s & TIMEOUT & UNIQUE & 0 & 0 & 1 & 0.00028 \\ \hline
+case\_5x5\_stress\_extensions & 5x5 & step\_limit\_5 & STEP_LIMIT & UNIQUE & 5 & 49 & 52 & 0.00397 \\ \hline
+\end{tabular}
+\caption{Failure, ambiguity, inconsistency, and timeout stress cases (reported without omission).}
+\label{tab:edge_cases}
+\end{table}

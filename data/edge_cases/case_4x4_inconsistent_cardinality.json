@@ -1,0 +1,151 @@
+{
+  "id": "case_4x4_inconsistent_cardinality",
+  "size": 4,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Doctor",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Lawyer",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Mechanic",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Tailor",
+      "cell": "D1"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Writer",
+      "cell": "A2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Musician",
+      "cell": "B2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Florist",
+      "cell": "C2"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Scientist",
+      "cell": "D2"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Sailor",
+      "cell": "A3"
+    },
+    {
+      "name": "Jonas",
+      "profession": "Painter",
+      "cell": "B3"
+    },
+    {
+      "name": "Karl",
+      "profession": "Architect",
+      "cell": "C3"
+    },
+    {
+      "name": "Leo",
+      "profession": "Librarian",
+      "cell": "D3"
+    },
+    {
+      "name": "Mara",
+      "profession": "Teacher",
+      "cell": "A4"
+    },
+    {
+      "name": "Noah",
+      "profession": "Judge",
+      "cell": "B4"
+    },
+    {
+      "name": "Owen",
+      "profession": "Photographer",
+      "cell": "C4"
+    },
+    {
+      "name": "Priya",
+      "profession": "Astronaut",
+      "cell": "D4"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "D1": "INNOCENT",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "INNOCENT",
+    "D2": "INNOCENT",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL",
+    "D3": "INNOCENT",
+    "A4": "INNOCENT",
+    "B4": "INNOCENT",
+    "C4": "INNOCENT",
+    "D4": "CRIMINAL"
+  },
+  "initially_revealed": [
+    "A1",
+    "B1"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "C"
+        },
+        "k": 1
+      }
+    }
+  ],
+  "difficulty": "EDGE_INCONSISTENT",
+  "metadata": {
+    "edge_type": "INCONSISTENT",
+    "reason": "EXACTLY 2 vs PARITY ODD on row 1"
+  }
+}

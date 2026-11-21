@@ -136,10 +136,14 @@
       "type": "EXACTLY",
       "params": {
         "region": {
-          "kind": "col",
-          "col": "C"
+          "kind": "cells",
+          "cells": [
+            "A1",
+            "B1",
+            "C2"
+          ]
         },
-        "k": 2
+        "k": 1
       }
     },
     {

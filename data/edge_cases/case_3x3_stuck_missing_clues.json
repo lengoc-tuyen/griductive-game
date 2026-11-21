@@ -1,0 +1,96 @@
+{
+  "id": "case_3x3_stuck_missing_clues",
+  "size": 3,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Writer",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Teacher",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Pilot",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Scientist",
+      "cell": "A2"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Lawyer",
+      "cell": "B2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Electrician",
+      "cell": "C2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Clerk",
+      "cell": "A3"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Baker",
+      "cell": "B3"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Detective",
+      "cell": "C3"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "INNOCENT",
+    "C1": "INNOCENT",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "CRIMINAL",
+    "A3": "INNOCENT",
+    "B3": "CRIMINAL",
+    "C3": "INNOCENT"
+  },
+  "initially_revealed": [
+    "B2"
+  ],
+  "clues": [
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "C"
+        },
+        "parity": "ODD"
+      }
+    }
+  ],
+  "difficulty": "EDGE_STUCK",
+  "metadata": {
+    "edge_type": "STUCK",
+    "reason": "Insufficient clues (7 cells remain ambiguous)"
+  }
+}
