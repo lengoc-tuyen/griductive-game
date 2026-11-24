@@ -1,0 +1,340 @@
+{
+  "id": "puzzle_4x4_hard_09",
+  "size": 4,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Scientist",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Sailor",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Photographer",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Detective",
+      "cell": "D1"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Librarian",
+      "cell": "A2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Painter",
+      "cell": "B2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Writer",
+      "cell": "C2"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Pilot",
+      "cell": "D2"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Astronaut",
+      "cell": "A3"
+    },
+    {
+      "name": "Jonas",
+      "profession": "Musician",
+      "cell": "B3"
+    },
+    {
+      "name": "Karl",
+      "profession": "Baker",
+      "cell": "C3"
+    },
+    {
+      "name": "Leo",
+      "profession": "Teacher",
+      "cell": "D3"
+    },
+    {
+      "name": "Mara",
+      "profession": "Electrician",
+      "cell": "A4"
+    },
+    {
+      "name": "Noah",
+      "profession": "Cook",
+      "cell": "B4"
+    },
+    {
+      "name": "Owen",
+      "profession": "Guard",
+      "cell": "C4"
+    },
+    {
+      "name": "Priya",
+      "profession": "Clerk",
+      "cell": "D4"
+    }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "CRIMINAL",
+    "C1": "CRIMINAL",
+    "D1": "CRIMINAL",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "CRIMINAL",
+    "D2": "INNOCENT",
+    "A3": "CRIMINAL",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL",
+    "D3": "INNOCENT",
+    "A4": "CRIMINAL",
+    "B4": "INNOCENT",
+    "C4": "INNOCENT",
+    "D4": "CRIMINAL"
+  },
+  "initially_revealed": [
+    "C3"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "edges"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "row",
+          "row": 3
+        },
+        "region_b": {
+          "kind": "col",
+          "col": "B"
+        },
+        "op": "MORE"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Ivy",
+          "b": "Noah"
+        },
+        "counts": "INNOCENT",
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D1",
+      "owner": "D1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Grant",
+          "b": "Noah"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Eliza"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Jonas",
+          "b": "Noah"
+        },
+        "k": 3
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "SAME",
+      "params": {
+        "a": "Bea",
+        "b": "Grant"
+      }
+    },
+    {
+      "id": "clue_D2",
+      "owner": "D2",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Eliza",
+          "b": "Hannah"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Franz",
+          "b": "Grant"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "cells",
+          "cells": [
+            "B3",
+            "B4",
+            "C3"
+          ]
+        },
+        "region_b": {
+          "kind": "between",
+          "a": "Bea",
+          "b": "Noah"
+        },
+        "op": "EQUAL",
+        "counts": "INNOCENT"
+      }
+    },
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Karl",
+          "b": "Priya"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_D3",
+      "owner": "D3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Clara",
+          "b": "Hannah"
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_A4",
+      "owner": "A4",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Clara",
+          "b": "Owen"
+        },
+        "counts": "INNOCENT",
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_B4",
+      "owner": "B4",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Abel",
+          "b": "Franz"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_C4",
+      "owner": "C4",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Derek",
+          "b": "Priya"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_D4",
+      "owner": "D4",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "neighbors",
+          "of": "A1"
+        },
+        "region_b": {
+          "kind": "neighbors",
+          "of": "D3"
+        },
+        "op": "FEWER"
+      }
+    }
+  ],
+  "difficulty": "HARD",
+  "metadata": {
+    "difficulty_score": 44.01,
+    "calculated_difficulty": "HARD",
+    "criminal_count": 8,
+    "criminal_ratio": 0.5,
+    "solve_steps": 15,
+    "dpll_decisions": 8,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 1475,
+    "dpll_runtime_s": 0.02857
+  }
+}

@@ -112,7 +112,7 @@ def _build_heuristics_tables(rows: list[dict[str, str]], tables_dir: Path) -> No
         md_lines.append(f"| `{pid}` | {size}x{size} | {cells[0]} | {cells[1]} | {cells[2]} |")
 
     md_lines.append(
-        "| **TOTAL (16 puzzles)** | — | "
+        f"| **TOTAL ({len(order)} puzzles)** | — | "
         + " | ".join(
             f"**{totals[h]['dec']} / {totals[h]['calls']} / {totals[h]['ms']:.2f}**"
             for h in ("lowest_index", "most_occurrences", "jeroslow_wang")
@@ -232,7 +232,8 @@ def _plot_runtime_same_task(
     width = min(0.24, 0.80 / max(1, n_series))
     x = list(range(len(puzzle_ids)))
 
-    plt.figure(figsize=(12, 5.2))
+    fig_w = max(12.0, len(puzzle_ids) * 0.55)
+    plt.figure(figsize=(fig_w, 5.4))
     for idx, (label, vals, color) in enumerate(series):
         offset = (idx - (n_series - 1) / 2.0) * width
         plt.bar([xi + offset for xi in x], vals, width=width, label=label, color=color)
@@ -270,7 +271,8 @@ def _plot_heuristics_comparison(
     x = list(range(len(puzzle_ids)))
     width = 0.25
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7.6), sharex=True)
+    fig_w = max(12.0, len(puzzle_ids) * 0.55)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(fig_w, 7.8), sharex=True)
     for idx, (h, label, color) in enumerate(heur_meta):
         offset = (idx - 1) * width
         decs = [int(by_pid_h[r["puzzle_id"]][h]["decisions"]) for r in main_rows]
@@ -303,7 +305,8 @@ def _plot_clauses_and_vars(main_rows: list[dict[str, str]], figures_dir: Path) -
     clauses = [int(r["clauses"]) for r in main_rows]
     x = list(range(len(puzzle_ids)))
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7.4), sharex=True)
+    fig_w = max(12.0, len(puzzle_ids) * 0.55)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(fig_w, 7.6), sharex=True)
     ax1.bar(x, pri, label="Primary Vars (N^2)", color="#3b82f6")
     ax1.bar(x, aux, bottom=pri, label="Auxiliary Vars (Extensions)", color="#f59e0b")
     ax1.set_ylabel("Variables")
