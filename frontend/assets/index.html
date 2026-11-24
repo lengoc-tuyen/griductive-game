@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Griductive</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-group">
+      <span class="brand">Griductive</span>
+      <span class="brand-tag">Logic Deduction</span>
+    </div>
+    <div class="controls">
+      <select id="puzzle-select" aria-label="Select Puzzle" title="Select Puzzle">
+        <option value="test_3x3_basic">test_3x3_basic (3x3)</option>
+      </select>
+      <label class="btn" for="file-upload" title="Load a custom puzzle JSON file">Load</label>
+      <input type="file" id="file-upload" accept=".json" hidden />
+      <span id="timer" class="timer" title="Elapsed Time">00:00</span>
+      <button id="btn-restart" class="btn" type="button" title="Reset current puzzle">Restart</button>
+    </div>
+  </header>
+
+  <div id="status-banner" class="banner" role="status" aria-live="polite">
+    Click a face-down card to judge Innocent or Criminal.
+  </div>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="puzzle-meta">
+        <div class="puzzle-meta-header">
+          <h2 class="sidebar-title">Griductive</h2>
+          <span id="puzzle-size-badge" class="size-badge">3&times;3</span>
+        </div>
+        <p id="puzzle-id-label" class="puzzle-id-text">test_3x3_basic</p>
+        <div class="progress-box">
+          <div class="progress-row">
+            <span>Solved</span>
+            <strong id="progress-text">0 / 0</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rules-box">
+        <h3>HOW TO PLAY</h3>
+        <ul>
+          <li><strong>Deduce, never guess:</strong> Click a face-down card to declare them <em>Innocent</em> or <em>Criminal</em>. Only logically forced verdicts are accepted.</li>
+          <li><strong>Inspect clues:</strong> Click any face-up card (<span aria-hidden="true">&#128269;</span>) to highlight the cells referenced by its statement.</li>
+          <li><strong>Draft notes:</strong> Toggle <em>Mark</em> mode (or right-click a face-down card) to cycle colored corner tags.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="board-area">
+      <div id="board" class="board" data-size="3"></div>
+
+      <div class="board-actions" role="toolbar" aria-label="Board tools">
+        <button id="btn-mark" class="btn pill-btn" type="button" aria-pressed="false">
+          <span class="mark-preview" aria-hidden="true"></span>
+          Mark: OFF
+        </button>
+        <button id="btn-clear-marks" class="btn pill-btn hidden" type="button">
+          Clear Marks
+        </button>
+        <button id="btn-hint" class="btn pill-btn" type="button" title="Request a logically forced hint">
+          Hint
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Verdict Modal -->
+  <div id="verdict-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span id="modal-cell" class="badge">A1</span>
+        <button id="modal-close" class="close-btn" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div id="modal-avatar" class="modal-avatar"></div>
+      <h2 id="modal-name">Alice</h2>
+      <p id="modal-prof" class="mono">Cook</p>
+      <p class="prompt">Innocent or criminal?</p>
+      <div class="modal-actions">
+        <button id="btn-innocent" class="btn btn-innocent" type="button">Innocent</button>
+        <button id="btn-criminal" class="btn btn-criminal" type="button">Criminal</button>
+      </div>
+      <p class="modal-shortcut-hint">Shortcuts: <kbd>I</kbd> Innocent &middot; <kbd>C</kbd> Criminal &middot; <kbd>Esc</kbd> Cancel</p>
+    </div>
+  </div>
+
+  <script src="js/avatars.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
