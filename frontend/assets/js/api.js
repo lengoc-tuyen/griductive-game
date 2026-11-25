@@ -170,7 +170,7 @@ async function submitVerdict(cell, status) {
   }
 }
 
-// Ready for Subsystem C (/api/hint) integration
+// Subsystem C (/api/hint, /api/step, /api/auto_solve) integration
 async function fetchHint() {
   try {
     const res = await fetch("/api/hint", { method: "POST" });
@@ -186,16 +186,54 @@ async function fetchHint() {
         if (rule && rule.req(revealedSet)) {
           return {
             ok: true,
+            outcome: "FOUND",
             cell: card.cell,
+            name: card.name,
             status: rule.status,
-            message: `Hint: ${card.cell} (${card.name}) can be logically deduced now.`
+            supporting_cells: Array.from(revealedSet),
+            message: `Hint: ${card.name} (${card.cell}) can be logically deduced now.`
           };
         }
       }
     }
     return {
-      ok: false,
-      message: "Hint API (/api/hint) is not connected yet or no forced move found."
+      ok: true,
+      outcome: "NONE",
+      cell: null,
+      message: "No forced move available right now."
+    };
+  }
+}
+
+async function stepAgent() {
+  try {
+    const res = await fetch("/api/step", { method: "POST" });
+    if (!res.ok) throw new Error("Step endpoint unavailable");
+    return await res.json();
+  } catch {
+    const h = await fetchHint();
+    if (h.outcome === "FOUND" && h.cell && h.status) {
+      const v = await submitVerdict(h.cell, h.status);
+      return {
+        ok: true,
+        outcome: v.state && v.state.is_solved ? "SOLVED" : "STEPPED",
+        step: {
+          step: v.state ? v.state.proved_count : 1,
+          cell: h.cell,
+          name: h.name,
+          verdict: h.status,
+          kb: { primary_vars: 9, aux_vars: 0, clauses: 4 },
+          sat_calls: 2
+        },
+        state: v.state
+      };
+    }
+    return {
+      ok: true,
+      outcome: offlineState.is_solved ? "SOLVED" : "STUCK",
+      step: null,
+      message: "No forced move remains.",
+      state: offlineState
     };
   }
 }

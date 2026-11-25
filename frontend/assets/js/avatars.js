@@ -1,131 +1,124 @@
-// Deterministic SVG Avatar Generator for Griductive characters
+// Deterministic illustrated SVG avatar generator (Knotwise Griductive style)
 
-(function () {
-  const BG_COLORS = [
-    "#E6DEC8", "#DCE8E2", "#E9DFD3", "#DDE4EE",
-    "#EDE0D4", "#E2E6D5", "#EAE0E5", "#F0E5CE"
-  ];
-
-  const SKIN_TONES = [
-    "#F8D9C2", "#F1C29B", "#E0A882", "#C68863",
-    "#9E6544", "#70452C"
-  ];
-
-  const HAIR_COLORS = [
-    "#262420", "#4A3222", "#6E4427", "#9C5B2E",
-    "#C88A3B", "#5A5A60", "#8D3B32", "#344154"
-  ];
-
-  const SHIRT_COLORS = [
-    "#4B7B70", "#C86D51", "#546E8A", "#B88B3E",
-    "#7A648A", "#5F8052", "#9E525A", "#4A6B82"
-  ];
-
-  let clipCounter = 0;
+(function (global) {
+  const SKIN_TONES = ["#F9D8C0", "#F1C29B", "#E2A77D", "#C88459", "#9A6040", "#73422B"];
+  const HAIR_COLORS = ["#26201D", "#4A2F21", "#7C4A27", "#C6863F", "#B54A2B", "#4B5563", "#D6A85A"];
+  const SHIRT_COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#6366F1", "#D97706", "#0EA5E9"];
+  const BG_TINTS = ["#EFE8DA", "#E6EFEA", "#F4E7E4", "#E6ECF5", "#F3EEDB", "#ECE6F4"];
 
   function hashString(str) {
     let h = 2166136261;
-    const input = String(str || "Character");
-    for (let i = 0; i < input.length; i++) {
-      h ^= input.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
       h = Math.imul(h, 16777619);
     }
     return h >>> 0;
   }
 
-  function escapeXml(str) {
-    return String(str || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
-  function renderHairBack(style, color) {
-    if (style === 1) {
-      return `<path d="M21 36 C20 55, 22 66, 26 70 L54 70 C58 66, 60 55, 59 36 Z" fill="${color}" stroke="#262420" stroke-width="2" />`;
-    }
-    if (style === 2) {
-      return `<circle cx="24" cy="40" r="9" fill="${color}" stroke="#262420" stroke-width="2" />
-              <circle cx="56" cy="40" r="9" fill="${color}" stroke="#262420" stroke-width="2" />`;
-    }
-    if (style === 3) {
-      return `<circle cx="40" cy="14" r="8" fill="${color}" stroke="#262420" stroke-width="2" />`;
-    }
-    return "";
-  }
-
-  function renderHairFront(style, color) {
+  function renderHair(style, color) {
     switch (style) {
-      case 0:
-        return `<path d="M23 36 C23 21, 57 21, 57 36 C54 29, 44 27, 35 30 C29 32, 25 34, 23 36 Z" fill="${color}" stroke="#262420" stroke-width="2" stroke-linejoin="round" />`;
-      case 1:
-        return `<path d="M23 37 C23 20, 57 20, 57 37 C52 30, 44 29, 40 33 C36 29, 28 30, 23 37 Z" fill="${color}" stroke="#262420" stroke-width="2" stroke-linejoin="round" />`;
-      case 2:
-        return `<path d="M22 36 C21 20, 59 20, 58 36 C52 28, 28 28, 22 36 Z" fill="${color}" stroke="#262420" stroke-width="2" stroke-linejoin="round" />`;
-      case 3:
-        return `<path d="M24 35 C25 21, 55 21, 56 35 C50 28, 30 28, 24 35 Z" fill="${color}" stroke="#262420" stroke-width="2" stroke-linejoin="round" />`;
-      default:
-        return `<path d="M23 36 C23 22, 57 22, 57 36 L52 29 L45 32 L40 27 L34 32 L28 29 Z" fill="${color}" stroke="#262420" stroke-width="2" stroke-linejoin="round" />`;
+      case 0: // Classic parted
+        return `
+          <path d="M18 33 C18 16, 46 16, 46 33 C43 26, 36 23, 28 24 C23 25, 20 28, 18 33 Z" fill="${color}"/>
+          <path d="M21 22 C28 17, 42 18, 45 28" stroke="${color}" stroke-width="3" fill="none" stroke-linecap="round"/>
+        `;
+      case 1: // Top bun
+        return `
+          <circle cx="32" cy="14" r="6.5" fill="${color}"/>
+          <path d="M18 34 C18 17, 46 17, 46 34 C42 25, 22 25, 18 34 Z" fill="${color}"/>
+        `;
+      case 2: // Bob / long side hair
+        return `
+          <path d="M16 39 C15 17, 49 17, 48 39 L45 45 L42 36 C40 26, 24 26, 22 36 L19 45 Z" fill="${color}"/>
+        `;
+      case 3: // Curly / afro puff
+        return `
+          <circle cx="22" cy="24" r="7" fill="${color}"/>
+          <circle cx="32" cy="19" r="8" fill="${color}"/>
+          <circle cx="42" cy="24" r="7" fill="${color}"/>
+          <circle cx="19" cy="31" r="5" fill="${color}"/>
+          <circle cx="45" cy="31" r="5" fill="${color}"/>
+        `;
+      case 4: // Spiky / textured short
+        return `
+          <path d="M18 32 L19 22 L24 24 L28 16 L33 22 L38 17 L41 24 L45 22 L46 32 C42 26, 22 26, 18 32 Z" fill="${color}"/>
+        `;
+      default: // Side swept long
+        return `
+          <path d="M17 42 C16 16, 48 16, 47 42 L43 44 C42 32, 41 26, 32 25 C25 25, 21 31, 20 44 Z" fill="${color}"/>
+        `;
     }
   }
 
-  function createAvatarSVG(name, profession = "", size = 56) {
-    const seed = hashString(`${name}|${profession}`);
-    const bg = BG_COLORS[seed % BG_COLORS.length];
-    const skin = SKIN_TONES[(seed >>> 3) % SKIN_TONES.length];
-    const hair = HAIR_COLORS[(seed >>> 6) % HAIR_COLORS.length];
-    const shirt = SHIRT_COLORS[(seed >>> 9) % SHIRT_COLORS.length];
-    const hairStyle = (seed >>> 12) % 5;
-    const hasGlasses = ((seed >>> 15) % 4) === 0;
-    const smileType = (seed >>> 17) % 3;
+  function createAvatarSVG(name, sizeClass = "") {
+    const safeName = String(name || "?");
+    const h = hashString(safeName);
+    const skin = SKIN_TONES[h % SKIN_TONES.length];
+    const hair = HAIR_COLORS[(h >>> 4) % HAIR_COLORS.length];
+    const shirt = SHIRT_COLORS[(h >>> 8) % SHIRT_COLORS.length];
+    const bg = BG_TINTS[(h >>> 12) % BG_TINTS.length];
+    const hairStyle = (h >>> 16) % 6;
+    const hasGlasses = ((h >>> 20) % 5) === 0;
+    const smileStyle = (h >>> 23) % 3;
 
-    clipCounter += 1;
-    const clipId = `avatar-clip-${clipCounter}`;
-    const label = escapeXml(`${name}${profession ? " - " + profession : ""}`);
+    let mouth = `<path d="M28 40 Q32 43.5 36 40" stroke="#262420" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+    if (smileStyle === 1) {
+      mouth = `<path d="M29 40.5 Q32 42 35 40.5" stroke="#262420" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+    } else if (smileStyle === 2) {
+      mouth = `<path d="M28.5 39.5 Q32 44 35.5 39.5 Z" fill="#FFFFFF" stroke="#262420" stroke-width="1.4" stroke-linejoin="round"/>`;
+    }
 
-    const mouthMarkup =
-      smileType === 0
-        ? `<path d="M35 48 Q40 52 45 48" fill="none" stroke="#262420" stroke-width="2" stroke-linecap="round" />`
-        : smileType === 1
-        ? `<path d="M36 49 L44 49" fill="none" stroke="#262420" stroke-width="2" stroke-linecap="round" />`
-        : `<path d="M35 48 Q40 51 45 48" fill="none" stroke="#262420" stroke-width="2" stroke-linecap="round" />`;
-
-    const glassesMarkup = hasGlasses
-      ? `<g stroke="#262420" stroke-width="1.8" fill="rgba(255,255,255,0.28)">
-           <circle cx="34" cy="40" r="4.5" />
-           <circle cx="46" cy="40" r="4.5" />
-           <line x1="38.5" y1="40" x2="41.5" y2="40" />
-         </g>`
+    const glasses = hasGlasses
+      ? `
+        <rect x="22.5" y="31" width="7.5" height="5.5" rx="2" fill="rgba(255,255,255,0.28)" stroke="#262420" stroke-width="1.4"/>
+        <rect x="34" y="31" width="7.5" height="5.5" rx="2" fill="rgba(255,255,255,0.28)" stroke="#262420" stroke-width="1.4"/>
+        <line x1="30" y1="33.5" x2="34" y2="33.5" stroke="#262420" stroke-width="1.4"/>
+      `
       : "";
 
+    const backHair =
+      hairStyle === 2 || hairStyle === 5
+        ? `<ellipse cx="32" cy="35" rx="16" ry="15" fill="${hair}"/>`
+        : "";
+
     return `
-      <svg width="${size}" height="${size}" viewBox="0 0 80 80" role="img" aria-label="${label}" style="display:block;">
+      <svg class="avatar-svg ${sizeClass}" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
-          <clipPath id="${clipId}">
-            <circle cx="40" cy="40" r="37" />
+          <clipPath id="clip-${h}">
+            <circle cx="32" cy="32" r="30"/>
           </clipPath>
         </defs>
-        <circle cx="40" cy="40" r="37" fill="${bg}" />
-        <g clip-path="url(#${clipId})">
-          ${renderHairBack(hairStyle, hair)}
-          <path d="M16 78 C18 61, 62 61, 64 78 Z" fill="${shirt}" stroke="#262420" stroke-width="2.2" />
-          <rect x="35" y="51" width="10" height="11" rx="4" fill="${skin}" stroke="#262420" stroke-width="2" />
-          <circle cx="24" cy="41" r="3.5" fill="${skin}" stroke="#262420" stroke-width="1.8" />
-          <circle cx="56" cy="41" r="3.5" fill="${skin}" stroke="#262420" stroke-width="1.8" />
-          <rect x="25" y="24" width="30" height="31" rx="14" fill="${skin}" stroke="#262420" stroke-width="2.2" />
-          <circle cx="34" cy="40" r="2" fill="#262420" />
-          <circle cx="46" cy="40" r="2" fill="#262420" />
-          <path d="M31 36 Q34 34.5 37 36" fill="none" stroke="#262420" stroke-width="1.6" stroke-linecap="round" />
-          <path d="M43 36 Q46 34.5 49 36" fill="none" stroke="#262420" stroke-width="1.6" stroke-linecap="round" />
-          ${glassesMarkup}
-          ${mouthMarkup}
-          ${renderHairFront(hairStyle, hair)}
+        <circle cx="32" cy="32" r="30" fill="${bg}"/>
+        <g clip-path="url(#clip-${h})">
+          ${backHair}
+          <!-- Shoulders / Shirt -->
+          <path d="M12 64 C13 50, 22 46, 32 46 C42 46, 51 50, 52 64 Z" fill="${shirt}" stroke="#262420" stroke-width="1.8"/>
+          <!-- Collar detail -->
+          <path d="M27 46 L32 52 L37 46" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Neck -->
+          <rect x="28.5" y="42" width="7" height="7" rx="3" fill="${skin}"/>
+          <!-- Ears -->
+          <circle cx="19" cy="34.5" r="3.2" fill="${skin}"/>
+          <circle cx="45" cy="34.5" r="3.2" fill="${skin}"/>
+          <!-- Head -->
+          <rect x="20" y="21" width="24" height="24.5" rx="12" fill="${skin}" stroke="#262420" stroke-width="1.5"/>
+          <!-- Cheeks -->
+          <circle cx="24.5" cy="37.5" r="2" fill="#F48A8A" opacity="0.32"/>
+          <circle cx="39.5" cy="37.5" r="2" fill="#F48A8A" opacity="0.32"/>
+          <!-- Eyes -->
+          <circle cx="26.5" cy="33.5" r="1.7" fill="#262420"/>
+          <circle cx="37.5" cy="33.5" r="1.7" fill="#262420"/>
+          <!-- Eyebrows -->
+          <path d="M24 29.8 Q26.5 28.6 29 29.8" stroke="${hair}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <path d="M35 29.8 Q37.5 28.6 40 29.8" stroke="${hair}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          ${mouth}
+          ${glasses}
+          ${renderHair(hairStyle, hair)}
         </g>
-        <circle cx="40" cy="40" r="37" fill="none" stroke="#262420" stroke-width="2.4" />
+        <circle cx="32" cy="32" r="30" fill="none" stroke="#262420" stroke-width="2"/>
       </svg>
     `;
   }
 
-  window.createAvatarSVG = createAvatarSVG;
-})();
+  global.createAvatarSVG = createAvatarSVG;
+})(window);
