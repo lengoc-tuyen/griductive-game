@@ -1,0 +1,444 @@
+{
+  "id": "puzzle_5x5_medium_09",
+  "size": 5,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Cook",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Scientist",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Baker",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Astronaut",
+      "cell": "D1"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Clerk",
+      "cell": "E1"
+    },
+    {
+      "name": "Franz",
+      "profession": "Mechanic",
+      "cell": "A2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Guard",
+      "cell": "B2"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Lawyer",
+      "cell": "C2"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Architect",
+      "cell": "D2"
+    },
+    {
+      "name": "Jonas",
+      "profession": "Sailor",
+      "cell": "E2"
+    },
+    {
+      "name": "Karl",
+      "profession": "Farmer",
+      "cell": "A3"
+    },
+    {
+      "name": "Leo",
+      "profession": "Detective",
+      "cell": "B3"
+    },
+    {
+      "name": "Mara",
+      "profession": "Teacher",
+      "cell": "C3"
+    },
+    {
+      "name": "Noah",
+      "profession": "Nurse",
+      "cell": "D3"
+    },
+    {
+      "name": "Owen",
+      "profession": "Tailor",
+      "cell": "E3"
+    },
+    {
+      "name": "Priya",
+      "profession": "Doctor",
+      "cell": "A4"
+    },
+    {
+      "name": "Quinn",
+      "profession": "Painter",
+      "cell": "B4"
+    },
+    {
+      "name": "Rose",
+      "profession": "Engineer",
+      "cell": "C4"
+    },
+    {
+      "name": "Sam",
+      "profession": "Electrician",
+      "cell": "D4"
+    },
+    {
+      "name": "Tina",
+      "profession": "Writer",
+      "cell": "E4"
+    },
+    {
+      "name": "Uma",
+      "profession": "Librarian",
+      "cell": "A5"
+    },
+    {
+      "name": "Victor",
+      "profession": "Pilot",
+      "cell": "B5"
+    },
+    {
+      "name": "Wendy",
+      "profession": "Musician",
+      "cell": "C5"
+    },
+    {
+      "name": "Xander",
+      "profession": "Judge",
+      "cell": "D5"
+    },
+    {
+      "name": "Yara",
+      "profession": "Photographer",
+      "cell": "E5"
+    }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "INNOCENT",
+    "C1": "INNOCENT",
+    "D1": "CRIMINAL",
+    "E1": "CRIMINAL",
+    "A2": "CRIMINAL",
+    "B2": "CRIMINAL",
+    "C2": "INNOCENT",
+    "D2": "CRIMINAL",
+    "E2": "CRIMINAL",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL",
+    "D3": "INNOCENT",
+    "E3": "INNOCENT",
+    "A4": "INNOCENT",
+    "B4": "INNOCENT",
+    "C4": "CRIMINAL",
+    "D4": "CRIMINAL",
+    "E4": "INNOCENT",
+    "A5": "INNOCENT",
+    "B5": "INNOCENT",
+    "C5": "CRIMINAL",
+    "D5": "INNOCENT",
+    "E5": "INNOCENT"
+  },
+  "initially_revealed": [
+    "C3",
+    "E2",
+    "B1"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "A"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "SAME",
+      "params": {
+        "a": "Leo",
+        "b": "Bea"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Grant"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D1",
+      "owner": "D1",
+      "type": "SAME",
+      "params": {
+        "a": "Franz",
+        "b": "Derek"
+      }
+    },
+    {
+      "id": "clue_E1",
+      "owner": "E1",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Hannah",
+        "b": "Eliza"
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "SAME",
+      "params": {
+        "a": "Ivy",
+        "b": "Franz"
+      }
+    },
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Jonas",
+          "b": "Owen"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Leo",
+          "b": "Noah"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_D2",
+      "owner": "D2",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Xander",
+        "b": "Ivy"
+      }
+    },
+    {
+      "id": "clue_E2",
+      "owner": "E2",
+      "type": "SAME",
+      "params": {
+        "a": "Eliza",
+        "b": "Jonas"
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Tina",
+          "b": "Xander"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "SAME",
+      "params": {
+        "a": "Noah",
+        "b": "Leo"
+      }
+    },
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Victor",
+        "b": "Mara"
+      }
+    },
+    {
+      "id": "clue_D3",
+      "owner": "D3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "cells",
+          "cells": [
+            "D3",
+            "D4",
+            "E4"
+          ]
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_E3",
+      "owner": "E3",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Grant",
+        "b": "Owen"
+      }
+    },
+    {
+      "id": "clue_A4",
+      "owner": "A4",
+      "type": "SAME",
+      "params": {
+        "a": "Abel",
+        "b": "Priya"
+      }
+    },
+    {
+      "id": "clue_B4",
+      "owner": "B4",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Derek",
+        "b": "Quinn"
+      }
+    },
+    {
+      "id": "clue_C4",
+      "owner": "C4",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Quinn",
+          "b": "Sam"
+        },
+        "k": 3
+      }
+    },
+    {
+      "id": "clue_D4",
+      "owner": "D4",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Quinn",
+        "b": "Sam"
+      }
+    },
+    {
+      "id": "clue_E4",
+      "owner": "E4",
+      "type": "SAME",
+      "params": {
+        "a": "Clara",
+        "b": "Tina"
+      }
+    },
+    {
+      "id": "clue_A5",
+      "owner": "A5",
+      "type": "SAME",
+      "params": {
+        "a": "Yara",
+        "b": "Uma"
+      }
+    },
+    {
+      "id": "clue_B5",
+      "owner": "B5",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Priya",
+          "b": "Quinn"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C5",
+      "owner": "C5",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Quinn",
+          "b": "Uma"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_D5",
+      "owner": "D5",
+      "type": "SAME",
+      "params": {
+        "a": "Owen",
+        "b": "Xander"
+      }
+    },
+    {
+      "id": "clue_E5",
+      "owner": "E5",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Uma",
+          "b": "Yara"
+        },
+        "k": 1
+      }
+    }
+  ],
+  "difficulty": "MEDIUM",
+  "metadata": {
+    "difficulty_score": 60.3,
+    "calculated_difficulty": "HARD",
+    "criminal_count": 10,
+    "criminal_ratio": 0.4,
+    "solve_steps": 22,
+    "dpll_decisions": 54,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 2243,
+    "dpll_runtime_s": 0.0295
+  }
+}

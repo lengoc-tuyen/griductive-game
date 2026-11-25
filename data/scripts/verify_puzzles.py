@@ -13,14 +13,16 @@ from data.puzzle_loader import PuzzleValidationError, load_puzzle
 from data.scripts.cross_checker import cross_check_all
 
 
-def verify_puzzle_file(path: Path) -> dict[str, str | bool]:
+def verify_puzzle_file(path: Path) -> dict[str, object]:
     """Verify a single puzzle file across all criteria."""
-    result: dict[str, str | bool] = {
+    result: dict[str, object] = {
         "file": path.name,
         "schema_ok": False,
         "dpll_unique": False,
         "agent_solvable": False,
         "cross_check_ok": False,
+        "cross_check_status": "ERR",
+        "cross_check_tiers": [],
         "overall": "FAIL",
         "details": "",
     }
@@ -50,18 +52,33 @@ def verify_puzzle_file(path: Path) -> dict[str, str | bool]:
 
     # 3. Independent cross-check
     cc_results = cross_check_all(puzzle)
-    all_cc_ok = True
-    for name, cc in cc_results.items():
-        if cc.available and (not cc.is_unique or not cc.matches_solution):
-            all_cc_ok = False
-            result["details"] = f"Cross-check {name} failed: unique={cc.is_unique}, match={cc.matches_solution}"
-            break
-
-    result["cross_check_ok"] = all_cc_ok
-    if all_cc_ok:
+    ran_tiers = {name: cc for name, cc in cc_results.items() if cc.available}
+    if not ran_tiers:
+        result["cross_check_status"] = "SKIP"
+        result["cross_check_ok"] = True
+        result["cross_check_tiers"] = []
         result["overall"] = "PASS"
-        result["details"] = f"Solved in {len(run.steps)} steps, {u_res.stats.decisions} decisions"
+        result["details"] = f"Solved in {len(run.steps)} steps (cc skipped)"
+        return result
 
+    failed = [
+        (name, cc) for name, cc in ran_tiers.items()
+        if not cc.is_unique or not cc.matches_solution
+    ]
+    if failed:
+        name, cc = failed[0]
+        result["cross_check_status"] = "ERR"
+        result["cross_check_ok"] = False
+        result["cross_check_tiers"] = sorted(ran_tiers)
+        result["details"] = f"Cross-check {name} failed: unique={cc.is_unique}, match={cc.matches_solution}"
+        return result
+
+    tiers_str = "+".join(sorted(ran_tiers))
+    result["cross_check_status"] = "OK"
+    result["cross_check_ok"] = True
+    result["cross_check_tiers"] = sorted(ran_tiers)
+    result["overall"] = "PASS"
+    result["details"] = f"Solved in {len(run.steps)} steps [{tiers_str}]"
     return result
 
 
@@ -84,9 +101,9 @@ def main() -> None:
         sys.exit(0)
 
     print(f"Verifying {len(files)} puzzle files...\n")
-    fmt = "{:<32} {:<8} {:<12} {:<14} {:<12} {:<8} {:<25}"
+    fmt = "{:<32} {:<8} {:<12} {:<14} {:<12} {:<8} {:<36}"
     print(fmt.format("Puzzle File", "Schema", "DPLL Unique", "No-Guess Solv", "Cross-Check", "Result", "Notes"))
-    print("-" * 115)
+    print("-" * 126)
 
     all_pass = True
     for f in files:
@@ -100,12 +117,12 @@ def main() -> None:
             "OK" if res["schema_ok"] else "ERR",
             "OK" if res["dpll_unique"] else "ERR",
             "OK" if res["agent_solvable"] else "ERR",
-            "OK" if res["cross_check_ok"] else "ERR",
+            str(res["cross_check_status"]),
             status_str,
-            str(res["details"])[:25],
+            str(res["details"])[:36],
         ))
 
-    print("-" * 115)
+    print("-" * 126)
     if all_pass:
         print("\nAll puzzles PASSED verification successfully!")
         sys.exit(0)

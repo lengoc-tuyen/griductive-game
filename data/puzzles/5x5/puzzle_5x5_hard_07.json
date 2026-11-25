@@ -1,0 +1,500 @@
+{
+  "id": "puzzle_5x5_hard_07",
+  "size": 5,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Farmer",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Librarian",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Musician",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Photographer",
+      "cell": "D1"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Doctor",
+      "cell": "E1"
+    },
+    {
+      "name": "Franz",
+      "profession": "Clerk",
+      "cell": "A2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Guard",
+      "cell": "B2"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Scientist",
+      "cell": "C2"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Engineer",
+      "cell": "D2"
+    },
+    {
+      "name": "Jonas",
+      "profession": "Painter",
+      "cell": "E2"
+    },
+    {
+      "name": "Karl",
+      "profession": "Judge",
+      "cell": "A3"
+    },
+    {
+      "name": "Leo",
+      "profession": "Tailor",
+      "cell": "B3"
+    },
+    {
+      "name": "Mara",
+      "profession": "Florist",
+      "cell": "C3"
+    },
+    {
+      "name": "Noah",
+      "profession": "Architect",
+      "cell": "D3"
+    },
+    {
+      "name": "Owen",
+      "profession": "Pilot",
+      "cell": "E3"
+    },
+    {
+      "name": "Priya",
+      "profession": "Nurse",
+      "cell": "A4"
+    },
+    {
+      "name": "Quinn",
+      "profession": "Lawyer",
+      "cell": "B4"
+    },
+    {
+      "name": "Rose",
+      "profession": "Sailor",
+      "cell": "C4"
+    },
+    {
+      "name": "Sam",
+      "profession": "Mechanic",
+      "cell": "D4"
+    },
+    {
+      "name": "Tina",
+      "profession": "Cook",
+      "cell": "E4"
+    },
+    {
+      "name": "Uma",
+      "profession": "Baker",
+      "cell": "A5"
+    },
+    {
+      "name": "Victor",
+      "profession": "Detective",
+      "cell": "B5"
+    },
+    {
+      "name": "Wendy",
+      "profession": "Teacher",
+      "cell": "C5"
+    },
+    {
+      "name": "Xander",
+      "profession": "Writer",
+      "cell": "D5"
+    },
+    {
+      "name": "Yara",
+      "profession": "Electrician",
+      "cell": "E5"
+    }
+  ],
+  "solution": {
+    "A1": "INNOCENT",
+    "B1": "INNOCENT",
+    "C1": "INNOCENT",
+    "D1": "CRIMINAL",
+    "E1": "CRIMINAL",
+    "A2": "INNOCENT",
+    "B2": "CRIMINAL",
+    "C2": "CRIMINAL",
+    "D2": "INNOCENT",
+    "E2": "INNOCENT",
+    "A3": "INNOCENT",
+    "B3": "CRIMINAL",
+    "C3": "INNOCENT",
+    "D3": "INNOCENT",
+    "E3": "CRIMINAL",
+    "A4": "CRIMINAL",
+    "B4": "INNOCENT",
+    "C4": "INNOCENT",
+    "D4": "CRIMINAL",
+    "E4": "CRIMINAL",
+    "A5": "CRIMINAL",
+    "B5": "INNOCENT",
+    "C5": "INNOCENT",
+    "D5": "INNOCENT",
+    "E5": "CRIMINAL"
+  },
+  "initially_revealed": [
+    "C3",
+    "D1"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Jonas",
+          "b": "Yara"
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Abel",
+          "b": "Uma"
+        },
+        "counts": "INNOCENT",
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Owen",
+          "b": "Sam"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D1",
+      "owner": "D1",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Wendy",
+        "b": "Derek"
+      }
+    },
+    {
+      "id": "clue_E1",
+      "owner": "E1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Priya",
+          "b": "Tina"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Franz",
+          "b": "Ivy"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Abel",
+          "b": "Priya"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "cells",
+          "cells": [
+            "C1",
+            "C2",
+            "E5"
+          ]
+        },
+        "region_b": {
+          "kind": "common_neighbors",
+          "a": "Hannah",
+          "b": "Karl"
+        },
+        "op": "MORE",
+        "counts": "INNOCENT"
+      }
+    },
+    {
+      "id": "clue_D2",
+      "owner": "D2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Abel",
+          "b": "Leo"
+        },
+        "counts": "INNOCENT",
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_E2",
+      "owner": "E2",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Priya",
+        "b": "Jonas"
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "col",
+          "col": "A"
+        },
+        "region_b": {
+          "kind": "col",
+          "col": "B"
+        },
+        "op": "EQUAL"
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Hannah",
+          "b": "Jonas"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Tina",
+          "b": "Xander"
+        },
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_D3",
+      "owner": "D3",
+      "type": "SAME",
+      "params": {
+        "a": "Xander",
+        "b": "Noah"
+      }
+    },
+    {
+      "id": "clue_E3",
+      "owner": "E3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Eliza",
+          "b": "Owen"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_A4",
+      "owner": "A4",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 4
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_B4",
+      "owner": "B4",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Uma",
+          "b": "Yara"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C4",
+      "owner": "C4",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Priya",
+          "b": "Quinn"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_D4",
+      "owner": "D4",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Franz"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_E4",
+      "owner": "E4",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Abel",
+          "b": "Clara"
+        },
+        "counts": "INNOCENT",
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_A5",
+      "owner": "A5",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "edges"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_B5",
+      "owner": "B5",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Eliza",
+          "b": "Owen"
+        },
+        "counts": "INNOCENT",
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_C5",
+      "owner": "C5",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Derek",
+          "b": "Jonas"
+        },
+        "counts": "INNOCENT",
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_D5",
+      "owner": "D5",
+      "type": "AT_MOST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Priya",
+          "b": "Wendy"
+        },
+        "counts": "INNOCENT",
+        "k": 2
+      }
+    },
+    {
+      "id": "clue_E5",
+      "owner": "E5",
+      "type": "SAME",
+      "params": {
+        "a": "Hannah",
+        "b": "Yara"
+      }
+    }
+  ],
+  "difficulty": "HARD",
+  "metadata": {
+    "difficulty_score": 79.9,
+    "calculated_difficulty": "HARD",
+    "criminal_count": 11,
+    "criminal_ratio": 0.44,
+    "solve_steps": 23,
+    "dpll_decisions": 78,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 2233,
+    "dpll_runtime_s": 0.04176
+  }
+}

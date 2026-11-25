@@ -1,0 +1,209 @@
+{
+  "id": "puzzle_3x3_hard_09",
+  "size": 3,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Electrician",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Farmer",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Clerk",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Scientist",
+      "cell": "A2"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Engineer",
+      "cell": "B2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Architect",
+      "cell": "C2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Baker",
+      "cell": "A3"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Guard",
+      "cell": "B3"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Mechanic",
+      "cell": "C3"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "CRIMINAL",
+    "C1": "CRIMINAL",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "INNOCENT",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "INNOCENT"
+  },
+  "initially_revealed": [
+    "B2"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Franz"
+        },
+        "region_b": {
+          "kind": "common_neighbors",
+          "a": "Abel",
+          "b": "Hannah"
+        },
+        "op": "MORE"
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Grant",
+          "b": "Ivy"
+        },
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "COMPARE",
+      "params": {
+        "region_a": {
+          "kind": "corners"
+        },
+        "region_b": {
+          "kind": "cells",
+          "cells": [
+            "A1",
+            "B2",
+            "C1"
+          ]
+        },
+        "op": "EQUAL"
+      }
+    },
+    {
+      "id": "clue_A2",
+      "owner": "A2",
+      "type": "AT_LEAST",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Derek"
+        },
+        "k": 1
+      }
+    },
+    {
+      "id": "clue_B2",
+      "owner": "B2",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "between",
+          "a": "Abel",
+          "b": "Grant"
+        },
+        "k": 0
+      }
+    },
+    {
+      "id": "clue_C2",
+      "owner": "C2",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Eliza",
+          "b": "Franz"
+        },
+        "counts": "INNOCENT",
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_A3",
+      "owner": "A3",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Eliza",
+          "b": "Ivy"
+        },
+        "counts": "INNOCENT",
+        "parity": "EVEN"
+      }
+    },
+    {
+      "id": "clue_B3",
+      "owner": "B3",
+      "type": "PARITY",
+      "params": {
+        "region": {
+          "kind": "col",
+          "col": "B"
+        },
+        "parity": "ODD"
+      }
+    },
+    {
+      "id": "clue_C3",
+      "owner": "C3",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "common_neighbors",
+          "a": "Eliza",
+          "b": "Hannah"
+        },
+        "counts": "INNOCENT",
+        "k": 4
+      }
+    }
+  ],
+  "difficulty": "HARD",
+  "metadata": {
+    "difficulty_score": 33.02,
+    "calculated_difficulty": "MEDIUM",
+    "criminal_count": 3,
+    "criminal_ratio": 0.333,
+    "solve_steps": 8,
+    "dpll_decisions": 2,
+    "dpll_backtracks": 0,
+    "dpll_propagations": 384,
+    "dpll_runtime_s": 0.01244
+  }
+}

@@ -367,13 +367,10 @@
     {
       "id": "clue_D1",
       "owner": "D1",
-      "type": "EXACTLY",
+      "type": "FACT",
       "params": {
-        "region": {
-          "kind": "col",
-          "col": "D"
-        },
-        "k": 3
+        "person": "Tina",
+        "status": "CRIMINAL"
       }
     },
     {
