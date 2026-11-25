@@ -158,6 +158,32 @@ class TestWebServiceAPI(unittest.TestCase):
         self.assertTrue(res["ok"])
         self.assertEqual(res["state"]["puzzle_id"], "test_3x3_basic")
 
+    def test_hint_step_and_auto_solve_api(self) -> None:
+        self.service.restart()
+        hint_res = self.service.get_hint()
+        self.assertTrue(hint_res["ok"])
+        self.assertEqual(hint_res["outcome"], "FOUND")
+        self.assertEqual(hint_res["cell"], "A1")
+        self.assertEqual(hint_res["status"], "INNOCENT")
+        self.assertIn("B2", hint_res["supporting_cells"])
+
+        step_res = self.service.step_agent()
+        self.assertTrue(step_res["ok"])
+        self.assertEqual(step_res["outcome"], "STEPPED")
+        self.assertEqual(step_res["step"]["cell"], "A1")
+        self.assertEqual(step_res["state"]["proved_count"], 2)
+
+        auto_res = self.service.auto_solve()
+        self.assertTrue(auto_res["ok"])
+        self.assertEqual(auto_res["outcome"], "SOLVED")
+        self.assertTrue(auto_res["state"]["is_solved"])
+        self.assertEqual(len(auto_res["steps"]), 7)
+
+    def test_assets_sample_puzzle_valid(self) -> None:
+        res = self.service.load_puzzle({"path": "frontend/assets/test_3x3_basic.json"})
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["state"]["size"], 3)
+
     def test_dev_console_html_embedded(self) -> None:
         self.assertIn("D1 Engine & API Test Console", _DEV_CONSOLE_HTML)
         self.assertIn("/api/verdict", _DEV_CONSOLE_HTML)

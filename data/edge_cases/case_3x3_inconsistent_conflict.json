@@ -1,0 +1,103 @@
+{
+  "id": "case_3x3_inconsistent_conflict",
+  "size": 3,
+  "characters": [
+    {
+      "name": "Abel",
+      "profession": "Writer",
+      "cell": "A1"
+    },
+    {
+      "name": "Bea",
+      "profession": "Teacher",
+      "cell": "B1"
+    },
+    {
+      "name": "Clara",
+      "profession": "Pilot",
+      "cell": "C1"
+    },
+    {
+      "name": "Derek",
+      "profession": "Scientist",
+      "cell": "A2"
+    },
+    {
+      "name": "Eliza",
+      "profession": "Lawyer",
+      "cell": "B2"
+    },
+    {
+      "name": "Franz",
+      "profession": "Electrician",
+      "cell": "C2"
+    },
+    {
+      "name": "Grant",
+      "profession": "Clerk",
+      "cell": "A3"
+    },
+    {
+      "name": "Hannah",
+      "profession": "Baker",
+      "cell": "B3"
+    },
+    {
+      "name": "Ivy",
+      "profession": "Detective",
+      "cell": "C3"
+    }
+  ],
+  "solution": {
+    "A1": "CRIMINAL",
+    "B1": "CRIMINAL",
+    "C1": "INNOCENT",
+    "A2": "INNOCENT",
+    "B2": "INNOCENT",
+    "C2": "INNOCENT",
+    "A3": "INNOCENT",
+    "B3": "INNOCENT",
+    "C3": "CRIMINAL"
+  },
+  "initially_revealed": [
+    "A1",
+    "B1"
+  ],
+  "clues": [
+    {
+      "id": "clue_A1",
+      "owner": "A1",
+      "type": "SAME",
+      "params": {
+        "a": "Abel",
+        "b": "Bea"
+      }
+    },
+    {
+      "id": "clue_B1",
+      "owner": "B1",
+      "type": "DIFFERENT",
+      "params": {
+        "a": "Abel",
+        "b": "Bea"
+      }
+    },
+    {
+      "id": "clue_C1",
+      "owner": "C1",
+      "type": "EXACTLY",
+      "params": {
+        "region": {
+          "kind": "row",
+          "row": 1
+        },
+        "k": 2
+      }
+    }
+  ],
+  "difficulty": "EDGE_INCONSISTENT",
+  "metadata": {
+    "edge_type": "INCONSISTENT",
+    "reason": "Direct contradiction: SAME(A1,B1) vs DIFFERENT(A1,B1)"
+  }
+}

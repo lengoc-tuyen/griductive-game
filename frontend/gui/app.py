@@ -38,6 +38,8 @@ from pathlib import Path
 from typing import Any, Mapping, Optional
 from urllib.parse import urlparse
 
+from algorithms.agent.deduction_agent import AgentOutcome, DeductionAgent
+from algorithms.agent.hint import hint as compute_hint
 from frontend.engine.game_engine import GameEngine
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -67,7 +69,7 @@ class GriductiveWebService:
         items: list[dict[str, Any]] = []
         seen_paths: set[Path] = set()
         search_roots = [PUZZLES_DIR, FIXTURES_DIR]
-        diff_rank = {"basic": 0, "easy": 1, "medium": 2, "hard": 3}
+        diff_rank = {"basic": 0, "easy": 1, "medium": 2, "hard": 3, "ext": 4}
 
         for root in search_roots:
             if not root.exists():
@@ -85,7 +87,7 @@ class GriductiveWebService:
                     size = int(data.get("size", 0))
                     low = pid.lower()
                     difficulty = "custom"
-                    for d in ("easy", "medium", "hard", "basic"):
+                    for d in ("easy", "medium", "hard", "ext", "basic"):
                         if d in low:
                             difficulty = d
                             break
@@ -163,10 +165,121 @@ class GriductiveWebService:
             res["state"] = self.engine.serialize_state()
             return res
 
-    # TODO [For C - Deduction Agent owner]:
-    # Add `get_hint(self)` and `auto_solve(self)` / `step_agent(self)` here by calling
-    # `algorithms.agent.hint.hint(self.engine.public_state())` and
-    # `algorithms.agent.deduction_agent.DeductionAgent().run(self.engine)`.
+    def get_hint(self) -> dict[str, Any]:
+        """Compute the next logically forced cell + irredundant supporting clues via [C] hint()."""
+        with self._lock:
+            state = self.engine.public_state()
+            if state.is_solved():
+                return {
+                    "ok": True,
+                    "outcome": "SOLVED",
+                    "cell": None,
+                    "message": "The puzzle is already solved!",
+                    "state": self.engine.serialize_state(),
+                }
+            try:
+                h = compute_hint(state, explain=True)
+            except ValueError:
+                return {
+                    "ok": True,
+                    "outcome": "INCONSISTENT",
+                    "cell": None,
+                    "message": "The revealed clues are logically inconsistent (UNSAT).",
+                    "state": self.engine.serialize_state(),
+                }
+
+            if h is None:
+                return {
+                    "ok": True,
+                    "outcome": "NONE",
+                    "cell": None,
+                    "message": "No character is logically forced from the currently unlocked clues.",
+                    "state": self.engine.serialize_state(),
+                }
+
+            clue_id_set = set(h.clue_ids)
+            supporting_cells = [c.owner for c in state.revealed_clues if c.id in clue_id_set]
+            ch = state.board.character_at(h.cell)
+            return {
+                "ok": True,
+                "outcome": "FOUND",
+                "cell": h.cell,
+                "name": ch.name,
+                "status": h.status.value,
+                "clue_ids": list(h.clue_ids),
+                "supporting_cells": supporting_cells,
+                "proved_cells": list(h.proved_cells),
+                "sat_calls": h.sat_calls,
+                "message": h.message(state),
+                "state": self.engine.serialize_state(),
+            }
+
+    def step_agent(self) -> dict[str, Any]:
+        """Execute a single no-guess deduction step using [C] DeductionAgent(max_steps=1)."""
+        with self._lock:
+            if self.engine.public_state().is_solved():
+                return {
+                    "ok": True,
+                    "outcome": "SOLVED",
+                    "step": None,
+                    "message": "The puzzle is already solved!",
+                    "state": self.engine.serialize_state(),
+                }
+
+            run = DeductionAgent(max_steps=1, time_limit=10.0).run(self.engine)
+            state_dict = self.engine.serialize_state()
+            if run.steps:
+                s = run.steps[0]
+                ch = self.engine.board.character_at(s.cell)
+                now_solved = state_dict["is_solved"]
+                return {
+                    "ok": True,
+                    "outcome": "SOLVED" if now_solved else "STEPPED",
+                    "step": {
+                        **s.to_dict(),
+                        "name": ch.name,
+                        "sat_calls": s.sat_calls,
+                    },
+                    "summary": run.summary(),
+                    "message": f"{ch.name} ({s.cell}) = {s.verdict.value}",
+                    "state": state_dict,
+                }
+
+            reason_map = {
+                AgentOutcome.STUCK: "No logically forced move remains — the agent never guesses.",
+                AgentOutcome.INCONSISTENT: "The current clues contradict each other (UNSAT).",
+                AgentOutcome.TIMEOUT: "The SAT solver exceeded the time limit.",
+                AgentOutcome.REJECTED: "Engine rejected the agent's proposed verdict.",
+            }
+            return {
+                "ok": True,
+                "outcome": run.outcome.value,
+                "step": None,
+                "summary": run.summary(),
+                "message": reason_map.get(run.outcome, f"Agent stopped ({run.outcome.value})."),
+                "state": state_dict,
+            }
+
+    def auto_solve(self) -> dict[str, Any]:
+        """Run [C] DeductionAgent to completion and return the full deduction trace."""
+        with self._lock:
+            run = DeductionAgent(time_limit=15.0).run(self.engine)
+            steps_out = []
+            for s in run.steps:
+                ch = self.engine.board.character_at(s.cell)
+                steps_out.append({
+                    **s.to_dict(),
+                    "name": ch.name,
+                    "sat_calls": s.sat_calls,
+                })
+            return {
+                "ok": True,
+                "outcome": run.outcome.value,
+                "steps": steps_out,
+                "trace": run.trace.to_dict(),
+                "summary": run.summary(),
+                "state": self.engine.serialize_state(),
+            }
 
 
 # ---------------------------------------------------------------------------
@@ -724,8 +837,12 @@ def _make_handler(service: GriductiveWebService):
                     self._send_json(HTTPStatus.OK, service.restart())
                 elif route == "/api/verdict":
                     self._send_json(HTTPStatus.OK, service.submit_verdict(payload))
-                # TODO [For C - Deduction Agent owner]:
-                # Wire `/api/hint` and `/api/auto_solve` (or `/api/step`) here.
+                elif route == "/api/hint":
+                    self._send_json(HTTPStatus.OK, service.get_hint())
+                elif route == "/api/step":
+                    self._send_json(HTTPStatus.OK, service.step_agent())
+                elif route == "/api/auto_solve":
+                    self._send_json(HTTPStatus.OK, service.auto_solve())
                 else:
                     self._send_json(HTTPStatus.NOT_FOUND, {"ok": False, "error": f"Unknown API endpoint: {route}"})
             except Exception as exc:  # noqa: BLE001

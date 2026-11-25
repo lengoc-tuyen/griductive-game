@@ -22,6 +22,19 @@
       </button>
       <input type="file" id="file-upload" accept=".json" hidden />
 
+      <button id="btn-restart" class="pill-btn" type="button" title="Restart current puzzle">
+        <span class="btn-icon">↺</span>
+        <span>Restart</span>
+      </button>
+      <button id="btn-step" class="pill-btn" type="button" title="Let the DPLL agent deduce one forced step">
+        <span class="btn-icon">⏭</span>
+        <span>Step</span>
+      </button>
+      <button id="btn-auto-solve" class="pill-btn" type="button" title="Automatically deduce all provable verdicts step-by-step">
+        <span id="auto-icon" class="btn-icon">▶</span>
+        <span id="auto-label">Auto Solve</span>
+      </button>
+
       <div class="timer-group">
         <div class="timer-pill" title="Elapsed Time">
           <span id="timer-dot" class="timer-dot"></span>
@@ -79,6 +92,14 @@
         </div>
         <div id="revealed-clues-list" class="clues-list"></div>
       </section>
+
+      <section id="trace-section" class="sidebar-section trace-section hidden">
+        <div class="section-header-row">
+          <h3>DEDUCTION TRACE</h3>
+          <span id="trace-count" class="count-chip">0</span>
+        </div>
+        <div id="trace-list" class="trace-list"></div>
+      </section>
     </aside>
 
     <!-- Main Board Stage -->
@@ -91,29 +112,33 @@
         </div>
       </div>
 
-      <!-- Tactile Retro Pill Action Bar (Knotwise bottom bar) -->
+      <!-- Tactile Retro Pill Action Bar (Knotwise bottom bar: Mark & Hint only) -->
       <div class="bottom-bar">
         <button id="btn-mark" class="pill-btn action-pill" type="button" title="Toggle pencil note tags on face-down cards">
-          <span class="btn-icon">✏️</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+          </svg>
           <span id="mark-label">Mark</span>
         </button>
-        <button id="btn-clear-marks" class="pill-btn action-pill" type="button" title="Clear all pencil notes">
-          <span class="btn-icon">🧹</span>
-          <span>Clear Marks</span>
+        <button id="btn-hint" class="pill-btn action-pill" type="button" title="Highlight supporting clues, then reveal the next deducible card (H)">
+          <span id="hint-icon" class="hint-icon-wrap" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/>
+              <path d="M10 22h4"/>
+            </svg>
+          </span>
+          <span id="hint-label">Hint</span>
         </button>
-        <button id="btn-restart" class="pill-btn action-pill" type="button" title="Restart current puzzle">
-          <span class="btn-icon">↺</span>
-          <span>Restart</span>
-        </button>
-        <!-- TODO [For C - Deduction Agent owner]: Add Hint / Auto Solve pill buttons here -->
       </div>
 
       <div id="mark-legend" class="mark-legend hidden">
-        <span>Mark mode ON — click face-down cards to cycle tags:</span>
+        <span>Mark mode ON — click cards to cycle tags:</span>
         <span class="legend-swatch" style="background:#F97066" title="Red"></span>
         <span class="legend-swatch" style="background:#32D583" title="Green"></span>
         <span class="legend-swatch" style="background:#FDB022" title="Yellow"></span>
         <span class="legend-swatch" style="background:#70B8FF" title="Blue"></span>
+        <button id="btn-clear-marks" class="legend-clear-btn hidden" type="button">Clear all</button>
       </div>
     </section>
   </main>

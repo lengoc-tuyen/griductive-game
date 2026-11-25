@@ -1,7 +1,7 @@
 // API client matching D1 JSON Contract (with full 3x3 solvable offline mock)
 
 const MOCK_PUZZLE_STATE = {
-  puzzle_id: "test_3x3_basic (Offline Mock)",
+  puzzle_id: "test_3x3_basic",
   size: 3,
   is_solved: false,
   proved_count: 1,
@@ -19,6 +19,8 @@ const MOCK_PUZZLE_STATE = {
   ]
 };
 
+const ALL_3X3_CELLS = ["A1", "B1", "C1", "A2", "B2", "C2", "A3", "B3", "C3"];
+
 const MOCK_SOLUTIONS = {
   A1: { status: "INNOCENT", clue: "Bob is a criminal.", highlight: ["B1"], req: () => true },
   A2: { status: "INNOCENT", clue: "Exactly 1 criminal in row 1.", highlight: ["A1", "B1", "C1"], req: () => true },
@@ -27,7 +29,7 @@ const MOCK_SOLUTIONS = {
   C2: { status: "CRIMINAL", clue: "There are no criminals in {A3, B3}.", highlight: ["A3", "B3"], req: (rev) => rev.has("C1") },
   C3: { status: "CRIMINAL", clue: "Grace is innocent.", highlight: ["A3"], req: (rev) => rev.has("C1") },
   A3: { status: "INNOCENT", clue: "Henry is innocent.", highlight: ["B3"], req: (rev) => rev.has("C2") || rev.has("C3") },
-  B3: { status: "INNOCENT", clue: "There are 3 criminals in total.", highlight: ["B1", "C2", "C3"], req: (rev) => rev.has("C2") || rev.has("A3") }
+  B3: { status: "INNOCENT", clue: "There are 3 criminals in total.", highlight: ALL_3X3_CELLS, req: (rev) => rev.has("C2") || rev.has("A3") }
 };
 
 let offlineState = JSON.parse(JSON.stringify(MOCK_PUZZLE_STATE));
@@ -40,7 +42,7 @@ async function fetchPuzzles() {
   } catch {
     return {
       ok: true,
-      puzzles: [{ id: "test_3x3_basic", name: "test_3x3_basic (3x3 - Mock)", size: 3, path: "" }]
+      puzzles: [{ id: "test_3x3_basic", name: "test_3x3_basic (3x3 - Offline Mock)", size: 3, path: "test_3x3_basic" }]
     };
   }
 }
@@ -65,7 +67,7 @@ async function loadPuzzle(payload) {
     if (!res.ok) throw new Error("Backend unavailable");
     return await res.json();
   } catch {
-    if (payload.puzzle && payload.puzzle.characters) {
+    if (payload && payload.puzzle && Array.isArray(payload.puzzle.characters)) {
       const p = payload.puzzle;
       const initSet = new Set(p.initially_revealed || []);
       const cards = p.characters.map((ch) => {
@@ -78,7 +80,7 @@ async function loadPuzzle(payload) {
           name: ch.name,
           profession: ch.profession,
           is_revealed: revealed,
-          status: revealed ? p.solution[ch.cell] : null,
+          status: revealed && p.solution ? p.solution[ch.cell] : null,
           clue_id: revealed && clue ? clue.id : null,
           clue_text: revealed && clue ? (clue.text || JSON.stringify(clue)) : null,
           highlight_cells: revealed && clue ? (clue.cells || []) : []
@@ -86,14 +88,17 @@ async function loadPuzzle(payload) {
       });
       offlineState = {
         puzzle_id: p.id || "uploaded_puzzle",
-        size: p.size,
-        is_solved: false,
+        size: p.size || Math.round(Math.sqrt(cards.length)),
+        is_solved: cards.every((c) => c.is_revealed),
         proved_count: cards.filter((c) => c.is_revealed).length,
         total_cells: cards.length,
         cards
       };
+      return { ok: true, message: `Loaded puzzle: ${offlineState.puzzle_id} (Offline Mock)`, state: offlineState };
     }
-    return { ok: true, message: "Loaded puzzle (Offline Mock mode)", state: offlineState };
+
+    offlineState = JSON.parse(JSON.stringify(MOCK_PUZZLE_STATE));
+    return { ok: true, message: "Loaded test_3x3_basic (Offline Mock)", state: offlineState };
   }
 }
 
@@ -104,7 +109,7 @@ async function restartPuzzle() {
     return await res.json();
   } catch {
     offlineState = JSON.parse(JSON.stringify(MOCK_PUZZLE_STATE));
-    return { ok: true, message: "Puzzle restarted.", state: offlineState };
+    return { ok: true, message: "Puzzle reset to initial state.", state: offlineState };
   }
 }
 
@@ -159,7 +164,75 @@ async function submitVerdict(cell, status) {
       result: "ACCEPTED",
       cell,
       status,
-      message: `${cell} confirmed ${status}!`,
+      message: `${cell} (${card.name}) confirmed ${status}!`,
+      state: offlineState
+    };
+  }
+}
+
+// Subsystem C (/api/hint, /api/step, /api/auto_solve) integration
+async function fetchHint() {
+  try {
+    const res = await fetch("/api/hint", { method: "POST" });
+    if (!res.ok) throw new Error("Hint endpoint unavailable");
+    return await res.json();
+  } catch {
+    const revealedSet = new Set(
+      offlineState.cards.filter((c) => c.is_revealed).map((c) => c.cell)
+    );
+    for (const card of offlineState.cards) {
+      if (!card.is_revealed) {
+        const rule = MOCK_SOLUTIONS[card.cell];
+        if (rule && rule.req(revealedSet)) {
+          return {
+            ok: true,
+            outcome: "FOUND",
+            cell: card.cell,
+            name: card.name,
+            status: rule.status,
+            supporting_cells: Array.from(revealedSet),
+            message: `Hint: ${card.name} (${card.cell}) can be logically deduced now.`
+          };
+        }
+      }
+    }
+    return {
+      ok: true,
+      outcome: "NONE",
+      cell: null,
+      message: "No forced move available right now."
+    };
+  }
+}
+
+async function stepAgent() {
+  try {
+    const res = await fetch("/api/step", { method: "POST" });
+    if (!res.ok) throw new Error("Step endpoint unavailable");
+    return await res.json();
+  } catch {
+    const h = await fetchHint();
+    if (h.outcome === "FOUND" && h.cell && h.status) {
+      const v = await submitVerdict(h.cell, h.status);
+      return {
+        ok: true,
+        outcome: v.state && v.state.is_solved ? "SOLVED" : "STEPPED",
+        step: {
+          step: v.state ? v.state.proved_count : 1,
+          cell: h.cell,
+          name: h.name,
+          verdict: h.status,
+          kb: { primary_vars: 9, aux_vars: 0, clauses: 4 },
+          sat_calls: 2
+        },
+        state: v.state
+      };
+    }
+    return {
+      ok: true,
+      outcome: offlineState.is_solved ? "SOLVED" : "STUCK",
+      step: null,
+      message: "No forced move remains.",
       state: offlineState
     };
   }

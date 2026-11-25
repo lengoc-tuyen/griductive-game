@@ -40,17 +40,18 @@ body {
 
 /* ------------------------------------------------------------------ Top Bar */
 .topbar {
-  height: 58px;
+  min-height: 58px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
+  padding: 8px 24px;
   background: var(--bg-header);
   border-bottom: 1.5px solid var(--hairline);
   gap: 14px;
   position: sticky;
   top: 0;
   z-index: 30;
+  flex-wrap: wrap;
 }
 
 .brand {
@@ -1412,6 +1413,11 @@ body {
   color: #991B1B;
 }
 
+.diff-badge.ext {
+  background: #EDE9FE;
+  color: #5B21B6;
+}
+
 .diff-badge.basic,
 .diff-badge.custom {
   background: #E7E1D5;
@@ -1449,6 +1455,113 @@ body {
   gap: 12px;
   padding-top: 14px;
   border-top: 1.5px solid var(--hairline);
+}
+
+/* Knotwise 3-Click Hint Styles & Sidebar Deduction Trace */
+.hidden {
+  display: none !important;
+}
+
+.hint-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.pill-btn.hint-coral-active {
+  background: #F28B7D;
+  color: var(--ink);
+  border-color: #B84A3E;
+  box-shadow: 2px 3px 0 0 #B84A3E;
+}
+
+.pill-btn.hint-coral-active:hover {
+  background: #E67667;
+}
+
+.pill-btn.hint-coral-active:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 #B84A3E;
+}
+
+/* Stage 1 & 2: Supporting clue card gets bold cobalt-blue dashed/striped border */
+.card-scene.hint-clue-card {
+  z-index: 14;
+}
+
+.card-scene.hint-clue-card .card-face {
+  border: 5px solid transparent;
+  padding: 5px 6px;
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--face-bg), var(--face-bg)) padding-box,
+    repeating-linear-gradient(-58deg, #1E3FAE 0 9px, #FAF7F2 9px 15px) border-box;
+}
+
+.card-scene.hint-clue-card .card-back {
+  padding: 7px 6px 7px;
+}
+
+/* Stage 2: Target deducible card gets solid purple border + purple name */
+.card-scene.hint-target {
+  z-index: 14;
+}
+
+.card-scene.hint-target .card-face {
+  border: 5px solid #8E37D7;
+  padding: 5px 6px;
+  border-radius: 12px;
+}
+
+.legend-clear-btn {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  background: var(--bg-page);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.legend-clear-btn:hover {
+  background: #E8E1D3;
+}
+
+.trace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 195px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.trace-entry {
+  background: var(--card-down);
+  border: 1.5px solid var(--hairline);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 0.76rem;
+  line-height: 1.32;
+}
+
+.trace-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.trace-entry-meta {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  margin-top: 2px;
 }
 
 .picker-upload-btn {

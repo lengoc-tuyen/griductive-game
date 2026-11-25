@@ -232,20 +232,25 @@ function renderRevealedCluesSidebar(state, uiState, hlMap, callbacks) {
   }
 
   const crossedSet = uiState.crossedClues || new Set();
+  const hintActive = uiState.hintStage === 1 || uiState.hintStage === 2;
+  const hintSupportSet = new Set(uiState.hintSupportingCells || []);
 
   revealed.forEach((card) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "clue-list-item";
-    const isActive = hlMap.activeSet.has(card.cell);
+    const isHintClue = hintActive && hintSupportSet.has(card.cell);
+    const isActive = isHintClue || (!hintActive && hlMap.activeSet.has(card.cell));
     const isCrossed = crossedSet.has(card.cell);
-    const itemColor = hlMap.clueAccentColor.get(card.cell) || card.clue_color || CLUE_PALETTE[0];
+    const itemColor = isHintClue
+      ? "#1E3FAE"
+      : hlMap.clueAccentColor.get(card.cell) || card.clue_color || CLUE_PALETTE[0];
 
     if (isActive) {
       btn.classList.add("active");
       btn.style.setProperty("--clue-item-color", itemColor);
       btn.style.setProperty("--clue-item-tint", hexToRgba(itemColor, 0.1));
-    } else if (hlMap.hasActive) {
+    } else if (hintActive || hlMap.hasActive) {
       btn.classList.add("dimmed");
     }
 
@@ -287,6 +292,9 @@ function renderBoard(state, uiState, callbacks) {
   const hlMap = computeHighlightMap(state, uiState);
   const newlyRevealed = uiState.newlyRevealed || new Set();
   const crossedSet = uiState.crossedClues || new Set();
+  const hintStage = uiState.hintStage || 0;
+  const hintSupportSet = new Set(uiState.hintSupportingCells || []);
+  const hintActive = hintStage === 1 || hintStage === 2;
 
   state.cards.forEach((card) => {
     const scene = document.createElement("div");
@@ -297,22 +305,34 @@ function renderBoard(state, uiState, callbacks) {
       scene.classList.add("is-flipped");
     }
 
-    const isSource = hlMap.activeSet.has(card.cell);
-    const borderColors = hlMap.cellColors.get(card.cell) || [];
+    const isHintClue = hintActive && hintSupportSet.has(card.cell);
+    const isHintTarget = hintStage === 2 && !card.is_revealed && uiState.hintCell === card.cell;
+
+    const isSource = !hintActive && hlMap.activeSet.has(card.cell);
+    const borderColors = !hintActive ? (hlMap.cellColors.get(card.cell) || []) : [];
     const hasBorder = borderColors.length > 0;
-    const isVisibleInFocus = isSource || hasBorder;
 
-    if (isSource) {
-      scene.classList.add("is-active-source");
-    }
-
-    if (hlMap.hasActive) {
-      if (hasBorder) {
-        scene.classList.add("has-color-border");
-        scene.style.setProperty("--multi-border-bg", buildMultiBorderCSS(borderColors));
-      }
-      if (!isVisibleInFocus) {
+    if (hintActive) {
+      if (isHintClue) {
+        scene.classList.add("hint-clue-card");
+      } else if (isHintTarget) {
+        scene.classList.add("hint-target");
+      } else {
         scene.classList.add("dimmed");
+      }
+    } else {
+      const isVisibleInFocus = isSource || hasBorder;
+      if (isSource) {
+        scene.classList.add("is-active-source");
+      }
+      if (hlMap.hasActive) {
+        if (hasBorder) {
+          scene.classList.add("has-color-border");
+          scene.style.setProperty("--multi-border-bg", buildMultiBorderCSS(borderColors));
+        }
+        if (!isVisibleInFocus) {
+          scene.classList.add("dimmed");
+        }
       }
     }
 
@@ -321,7 +341,14 @@ function renderBoard(state, uiState, callbacks) {
     const hasMark = markIdx > 0;
     const statusClass = card.status || "";
     const statusLabel = card.status === "INNOCENT" ? "INNOCENT" : card.status === "CRIMINAL" ? "CRIMINAL" : "";
-    const nameColor = hlMap.cellNameColor.get(card.cell) || "";
+    let nameColor = "";
+    if (isHintClue) {
+      nameColor = "#1E3FAE";
+    } else if (isHintTarget) {
+      nameColor = "#8E37D7";
+    } else if (!hintActive) {
+      nameColor = hlMap.cellNameColor.get(card.cell) || "";
+    }
     const nameStyle = nameColor ? `style="color:${nameColor}"` : "";
 
     const isCrossed = crossedSet.has(card.cell);
@@ -394,6 +421,22 @@ function renderBoard(state, uiState, callbacks) {
             callbacks.onTokenClick(card, grpIdx);
           }
         });
+      });
+    }
+
+    // Direct click on corner mark dot or right-click on unrevealed card cycles draft note color
+    if (!card.is_revealed && callbacks.onCycleMark) {
+      const markDotEl = scene.querySelector(".mark-dot");
+      if (markDotEl) {
+        markDotEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          callbacks.onCycleMark(card);
+        });
+      }
+      scene.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        callbacks.onCycleMark(card);
       });
     }
 

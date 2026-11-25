@@ -5,6 +5,8 @@ let selectedCardForModal = null;
 let timerSeconds = 0;
 let timerInterval = null;
 let isPaused = false;
+let autoSolveTimer = null;
+let autoSolveBusy = false;
 let puzzleCatalog = [];
 let pickerSelectedSize = null;
 
@@ -16,7 +18,11 @@ const uiState = {
   activeClueCells: [],     // [] | [cell] (focus mode) | [c1, c2, ...] (multi-clue compare via Shift+Click)
   focusedGroupIndex: null, // number | null (clicking a colored keyword/name inside the active clue)
   crossedClues: new Set(), // Set of revealed cell ids whose clue text is crossed out
-  newlyRevealed: new Set()
+  newlyRevealed: new Set(),
+  hintStage: 0,            // 0 = off, 1 = show supporting clue(s) ("Reveal"), 2 = show target cell ("Cancel")
+  hintSupportingCells: [], // Supporting clue/proved cells highlighted with blue dashed border
+  hintCell: null,          // Target deducible unrevealed cell highlighted with purple border in stage 2
+  traceSteps: []           // Deduction trace entries recorded from Step / Auto Solve
 };
 
 function escText(str) {
@@ -63,6 +69,7 @@ function detectDifficulty(puzzleId, fallback) {
   if (low.includes("easy")) return "easy";
   if (low.includes("medium")) return "medium";
   if (low.includes("hard")) return "hard";
+  if (low.includes("ext")) return "ext";
   if (low.includes("basic")) return "basic";
   return "custom";
 }
@@ -89,6 +96,83 @@ function updateHeaderAndSidebarMeta() {
     const shortName = formatShortPuzzleTitle(currentState.puzzle_id, currentState.size);
     btnLabel.textContent = `${currentState.size}×${currentState.size} · ${shortName}`;
   }
+
+  // Toggle Clear Marks visibility inside mark legend
+  const hasMarks = Object.values(uiState.marks).some((v) => v > 0);
+  const clearBtn = document.getElementById("btn-clear-marks");
+  if (clearBtn) clearBtn.classList.toggle("hidden", !hasMarks);
+
+  // Sync 3-stage Hint button ("Hint" -> "Reveal" -> "Cancel")
+  const hintLabel = document.getElementById("hint-label");
+  const hintIcon = document.getElementById("hint-icon");
+  const hintBtn = document.getElementById("btn-hint");
+  if (hintLabel && hintIcon && hintBtn) {
+    const bulbSvg = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+        <path d="M9 18h6"/>
+        <path d="M10 22h4"/>
+      </svg>`;
+    const crossSvg = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>`;
+
+    if (uiState.hintStage === 1) {
+      hintIcon.innerHTML = bulbSvg;
+      hintLabel.textContent = "Reveal";
+      hintBtn.classList.add("hint-coral-active");
+    } else if (uiState.hintStage === 2) {
+      hintIcon.innerHTML = crossSvg;
+      hintLabel.textContent = "Cancel";
+      hintBtn.classList.add("hint-coral-active");
+    } else {
+      hintIcon.innerHTML = bulbSvg;
+      hintLabel.textContent = "Hint";
+      hintBtn.classList.remove("hint-coral-active");
+    }
+  }
+
+  renderTraceSidebar();
+}
+
+function renderTraceSidebar() {
+  const secEl = document.getElementById("trace-section");
+  const countEl = document.getElementById("trace-count");
+  const listEl = document.getElementById("trace-list");
+  if (!secEl || !countEl || !listEl) return;
+
+  const steps = uiState.traceSteps || [];
+  if (steps.length === 0) {
+    secEl.classList.add("hidden");
+    countEl.textContent = "0";
+    listEl.innerHTML = "";
+    return;
+  }
+
+  secEl.classList.remove("hidden");
+  countEl.textContent = String(steps.length);
+  listEl.innerHTML = steps
+    .map((s) => {
+      const kb = s.kb || {};
+      const varsTxt = kb.primary_vars !== undefined
+        ? `${kb.primary_vars}+${kb.aux_vars || 0}v, ${kb.clauses || 0}c`
+        : "";
+      const satTxt = s.sat_calls !== undefined ? `${s.sat_calls} SAT` : "";
+      const meta = [varsTxt, satTxt].filter(Boolean).join(" · ");
+      return `
+        <div class="trace-entry">
+          <div class="trace-entry-top">
+            <span>#${escText(s.step)} ${escText(s.cell)} (${escText(s.name || "")})</span>
+            <span class="clue-list-coord ${escText(s.verdict)}">${escText(s.verdict)}</span>
+          </div>
+          ${meta ? `<div class="trace-entry-meta">${escText(meta)}</div>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+  listEl.scrollTop = listEl.scrollHeight;
 }
 
 function _runTimerTick() {
@@ -119,8 +203,23 @@ function stopTimer() {
   }
 }
 
+function stopAutoSolve() {
+  if (autoSolveTimer !== null) {
+    clearInterval(autoSolveTimer);
+    autoSolveTimer = null;
+  }
+  autoSolveBusy = false;
+  const btn = document.getElementById("btn-auto-solve");
+  const icon = document.getElementById("auto-icon");
+  const lbl = document.getElementById("auto-label");
+  if (btn) btn.classList.remove("active-toggle");
+  if (icon) icon.textContent = "▶";
+  if (lbl) lbl.textContent = "Auto Solve";
+}
+
 function pauseGame() {
   if (isPaused || !currentState || currentState.is_solved) return;
+  stopAutoSolve();
   isPaused = true;
   closeVerdictModal();
   closePuzzlePicker();
@@ -156,7 +255,7 @@ function closeVerdictModal() {
   document.getElementById("verdict-modal").classList.add("hidden");
 }
 
-function openErrorModal({ kind, name, calledStatus, customTitle, customBody }) {
+function openErrorModal({ kind, name, calledStatus, customTitle, customBody, customKind }) {
   const iconEl = document.getElementById("error-icon-circle");
   const titleEl = document.getElementById("error-title");
   const bodyEl = document.getElementById("error-body");
@@ -166,8 +265,10 @@ function openErrorModal({ kind, name, calledStatus, customTitle, customBody }) {
   const oppositeLower = calledLower === "innocent" ? "criminal" : "innocent";
 
   if (customTitle || customBody) {
-    iconEl.className = "notice-icon-circle contradicted";
-    titleEl.textContent = customTitle || "Cannot load puzzle";
+    iconEl.className = customKind === "warning"
+      ? "notice-icon-circle warning"
+      : "notice-icon-circle contradicted";
+    titleEl.textContent = customTitle || "Notice";
     bodyEl.innerHTML = escText(customBody || "Something went wrong.");
   } else if (kind === "NOT_PROVABLE") {
     iconEl.className = "notice-icon-circle warning";
@@ -231,7 +332,6 @@ function renderPuzzlePicker() {
     pickerSelectedSize = bySize.has(activeSize) ? activeSize : sizes[0];
   }
 
-  // Render Size Tabs (3×3, 4×4, 5×5)
   tabsEl.innerHTML = "";
   sizes.forEach((sz) => {
     const list = bySize.get(sz) || [];
@@ -251,7 +351,6 @@ function renderPuzzlePicker() {
     tabsEl.appendChild(btn);
   });
 
-  // Render Puzzle Cards for selected size
   const activeList = bySize.get(pickerSelectedSize) || [];
   gridEl.innerHTML = "";
   activeList.forEach((p) => {
@@ -295,6 +394,7 @@ function renderPuzzlePicker() {
 
 function openPuzzlePicker() {
   if (isPaused) return;
+  stopAutoSolve();
   closeVerdictModal();
   if (currentState && currentState.size) {
     pickerSelectedSize = currentState.size;
@@ -308,8 +408,15 @@ function closePuzzlePicker() {
 }
 
 // ------------------------------------------------ Board & Clue Highlight Logic
+function clearHintState() {
+  uiState.hintStage = 0;
+  uiState.hintSupportingCells = [];
+  uiState.hintCell = null;
+}
+
 function toggleClueHighlight(card, multi = false) {
   if (!card || !card.is_revealed) return;
+  clearHintState();
   if (multi) {
     uiState.focusedGroupIndex = null;
     const idx = uiState.activeClueCells.indexOf(card.cell);
@@ -333,6 +440,7 @@ function toggleClueHighlight(card, multi = false) {
 
 function toggleTokenFocus(card, groupIdx) {
   if (!card || !card.is_revealed) return;
+  clearHintState();
   if (uiState.activeClueCells.length === 1 && uiState.activeClueCells[0] === card.cell) {
     if (uiState.focusedGroupIndex === groupIdx) {
       uiState.focusedGroupIndex = null;
@@ -359,20 +467,28 @@ function toggleClueCrossed(card) {
 }
 
 function clearHighlight() {
-  if (uiState.activeClueCells.length > 0 || uiState.focusedGroupIndex !== null) {
+  if (
+    uiState.activeClueCells.length > 0 ||
+    uiState.focusedGroupIndex !== null ||
+    uiState.hintStage !== 0
+  ) {
     uiState.activeClueCells = [];
     uiState.focusedGroupIndex = null;
+    clearHintState();
     uiState.newlyRevealed = new Set();
     refreshBoard();
   }
 }
 
 function resetUiState() {
+  stopAutoSolve();
   uiState.marks = {};
   uiState.activeClueCells = [];
   uiState.focusedGroupIndex = null;
   uiState.crossedClues = new Set();
   uiState.newlyRevealed = new Set();
+  clearHintState();
+  uiState.traceSteps = [];
 }
 
 function refreshBoard() {
@@ -380,7 +496,7 @@ function refreshBoard() {
   updateHeaderAndSidebarMeta();
   renderBoard(currentState, uiState, {
     onCardClick(card, shiftKey) {
-      if (isPaused) return;
+      if (isPaused || autoSolveTimer !== null) return;
       if (!card.is_revealed) {
         if (uiState.markMode) {
           const next = ((uiState.marks[card.cell] || 0) + 1) % MARK_COLORS.length;
@@ -393,6 +509,13 @@ function refreshBoard() {
       } else {
         toggleClueHighlight(card, shiftKey);
       }
+    },
+    onCycleMark(card) {
+      if (isPaused || autoSolveTimer !== null || !card || card.is_revealed) return;
+      const next = ((uiState.marks[card.cell] || 0) + 1) % MARK_COLORS.length;
+      uiState.marks[card.cell] = next;
+      uiState.newlyRevealed = new Set();
+      refreshBoard();
     },
     onClueSelect(card, shiftKey) {
       if (isPaused) return;
@@ -423,6 +546,7 @@ async function handleVerdict(status) {
     delete uiState.marks[cell];
     uiState.activeClueCells = [];
     uiState.focusedGroupIndex = null;
+    clearHintState();
 
     refreshBoard();
 
@@ -440,6 +564,139 @@ async function handleVerdict(status) {
       calledStatus: status
     });
   }
+}
+
+// ------------------------------------------------ 3-Click Hint, Step & Auto Solve
+async function handleHint() {
+  if (isPaused || !currentState || currentState.is_solved) return;
+  stopAutoSolve();
+
+  // Click 2 ("Reveal"): keep clue striped border & highlight target unrevealed card; button -> "Cancel"
+  if (uiState.hintStage === 1) {
+    uiState.hintStage = 2;
+    uiState.newlyRevealed = new Set();
+    refreshBoard();
+    return;
+  }
+
+  // Click 3 ("Cancel"): dismiss Hint without auto-solving the card
+  if (uiState.hintStage === 2) {
+    clearHintState();
+    uiState.newlyRevealed = new Set();
+    refreshBoard();
+    return;
+  }
+
+  // Click 1 ("Hint"): highlight supporting clue card(s) with blue dashed border & dim others; button -> "Reveal"
+  const res = await fetchHint();
+  if (res.state) currentState = res.state;
+
+  if (res.outcome === "FOUND" && res.cell) {
+    const support = Array.isArray(res.supporting_cells) && res.supporting_cells.length > 0
+      ? res.supporting_cells
+      : Array.isArray(res.proved_cells) && res.proved_cells.length > 0
+        ? res.proved_cells
+        : [];
+    uiState.activeClueCells = [];
+    uiState.focusedGroupIndex = null;
+    uiState.hintSupportingCells = support;
+    uiState.hintCell = res.cell;
+    // If there are no supporting revealed cards (edge case), jump straight to showing target cell
+    uiState.hintStage = support.length > 0 ? 1 : 2;
+    uiState.newlyRevealed = new Set();
+    refreshBoard();
+  } else if (res.outcome === "INCONSISTENT") {
+    openErrorModal({
+      customTitle: "Contradictory clues",
+      customBody: res.message || "The current knowledge base is inconsistent (UNSAT)."
+    });
+  } else if (res.outcome === "NONE") {
+    openErrorModal({
+      customKind: "warning",
+      customTitle: "No forced move found",
+      customBody: res.message || "Neither Criminal nor Innocent is logically forced for any remaining card."
+    });
+  }
+}
+
+async function performSingleAgentStep() {
+  if (isPaused || !currentState || currentState.is_solved || autoSolveBusy) {
+    return "STOP";
+  }
+  autoSolveBusy = true;
+  try {
+    const res = await stepAgent();
+    if (res.state) currentState = res.state;
+
+    if ((res.outcome === "STEPPED" || res.outcome === "SOLVED") && res.step) {
+      const cell = res.step.cell;
+      uiState.newlyRevealed = new Set([cell]);
+      delete uiState.marks[cell];
+      clearHintState();
+      uiState.activeClueCells = [];
+      uiState.focusedGroupIndex = null;
+      uiState.traceSteps.push({
+        ...res.step,
+        step: uiState.traceSteps.length + 1
+      });
+      refreshBoard();
+
+      if (currentState.is_solved) {
+        stopAutoSolve();
+        stopTimer();
+        recordPuzzleSolved(currentState.puzzle_id, timerSeconds);
+        setTimeout(openVictoryModal, 520);
+        return "SOLVED";
+      }
+      return "STEPPED";
+    }
+
+    stopAutoSolve();
+    if (res.outcome === "INCONSISTENT") {
+      openErrorModal({
+        customTitle: "Inconsistent puzzle (UNSAT)",
+        customBody: res.message || "The solver detected contradictory clues and halted."
+      });
+    } else if (res.outcome === "STUCK" || res.outcome === "TIMEOUT") {
+      openErrorModal({
+        customKind: "warning",
+        customTitle: res.outcome === "TIMEOUT" ? "Solver timeout" : "No forced move available",
+        customBody: res.message || "The deduction agent stopped because no move is logically forced."
+      });
+    }
+    return res.outcome || "STOP";
+  } finally {
+    autoSolveBusy = false;
+  }
+}
+
+function toggleAutoSolve() {
+  if (isPaused || !currentState || currentState.is_solved) return;
+  if (autoSolveTimer !== null) {
+    stopAutoSolve();
+    return;
+  }
+
+  const btn = document.getElementById("btn-auto-solve");
+  const icon = document.getElementById("auto-icon");
+  const lbl = document.getElementById("auto-label");
+  if (btn) btn.classList.add("active-toggle");
+  if (icon) icon.textContent = "⏹";
+  if (lbl) lbl.textContent = "Stop";
+
+  performSingleAgentStep().then((firstOutcome) => {
+    if (firstOutcome !== "STEPPED" || autoSolveTimer !== null || !btn.classList.contains("active-toggle")) {
+      if (firstOutcome !== "STEPPED") stopAutoSolve();
+      return;
+    }
+    autoSolveTimer = setInterval(async () => {
+      if (autoSolveBusy) return;
+      const out = await performSingleAgentStep();
+      if (out !== "STEPPED") {
+        stopAutoSolve();
+      }
+    }, 360);
+  });
 }
 
 async function loadSelectedPuzzle(path) {
@@ -553,10 +810,9 @@ async function init() {
   });
   document.getElementById("btn-resume").addEventListener("click", resumeGame);
 
-  // Bottom bar buttons
-  document.getElementById("btn-restart").addEventListener("click", handleRestart);
-
+  // Bottom bar buttons: Mark, Clear Marks, Hint, Step, Auto Solve, Restart
   document.getElementById("btn-mark").addEventListener("click", (e) => {
+    e.stopPropagation();
     uiState.markMode = !uiState.markMode;
     const btn = e.currentTarget;
     btn.classList.toggle("active-toggle", uiState.markMode);
@@ -566,10 +822,32 @@ async function init() {
     refreshBoard();
   });
 
-  document.getElementById("btn-clear-marks").addEventListener("click", () => {
+  document.getElementById("btn-clear-marks").addEventListener("click", (e) => {
+    e.stopPropagation();
     uiState.marks = {};
     uiState.newlyRevealed = new Set();
     refreshBoard();
+  });
+
+  document.getElementById("btn-hint").addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleHint();
+  });
+
+  document.getElementById("btn-step").addEventListener("click", (e) => {
+    e.stopPropagation();
+    stopAutoSolve();
+    performSingleAgentStep();
+  });
+
+  document.getElementById("btn-auto-solve").addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleAutoSolve();
+  });
+
+  document.getElementById("btn-restart").addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleRestart();
   });
 
   // Verdict modal events
@@ -599,14 +877,28 @@ async function init() {
     if (!isPaused) clearHighlight();
   });
 
-  // Keyboard shortcuts: Escape closes modals / resumes pause; P toggles pause
+  // Keyboard shortcuts: Escape, P (Pause), H (Hint), I/1 & C/2 inside verdict modal
   window.addEventListener("keydown", (e) => {
+    const verdictOpen = !document.getElementById("verdict-modal").classList.contains("hidden");
+    if (verdictOpen && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (e.key === "i" || e.key === "I" || e.key === "1") {
+        handleVerdict("INNOCENT");
+        return;
+      }
+      if (e.key === "c" || e.key === "C" || e.key === "2") {
+        handleVerdict("CRIMINAL");
+        return;
+      }
+    }
+
     if (e.key === "Escape") {
-      if (!document.getElementById("error-modal").classList.contains("hidden")) {
+      if (autoSolveTimer !== null) {
+        stopAutoSolve();
+      } else if (!document.getElementById("error-modal").classList.contains("hidden")) {
         closeErrorModal();
       } else if (!document.getElementById("puzzle-picker-modal").classList.contains("hidden")) {
         closePuzzlePicker();
-      } else if (!document.getElementById("verdict-modal").classList.contains("hidden")) {
+      } else if (verdictOpen) {
         closeVerdictModal();
       } else if (isPaused) {
         resumeGame();
@@ -615,15 +907,21 @@ async function init() {
       } else {
         clearHighlight();
       }
-    } else if ((e.key === "p" || e.key === "P") && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const anyModalOpen =
-        !document.getElementById("verdict-modal").classList.contains("hidden") ||
-        !document.getElementById("error-modal").classList.contains("hidden") ||
-        !document.getElementById("puzzle-picker-modal").classList.contains("hidden") ||
-        !document.getElementById("victory-modal").classList.contains("hidden");
-      if (!anyModalOpen) {
+      return;
+    }
+
+    const anyModalOpen =
+      verdictOpen ||
+      !document.getElementById("error-modal").classList.contains("hidden") ||
+      !document.getElementById("puzzle-picker-modal").classList.contains("hidden") ||
+      !document.getElementById("victory-modal").classList.contains("hidden");
+
+    if (!anyModalOpen && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (e.key === "p" || e.key === "P") {
         if (isPaused) resumeGame();
         else pauseGame();
+      } else if ((e.key === "h" || e.key === "H") && !isPaused) {
+        handleHint();
       }
     }
   });

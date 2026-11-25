@@ -237,25 +237,19 @@
     {
       "id": "clue_B1",
       "owner": "B1",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "params": {
-        "region": {
-          "kind": "row",
-          "row": 1
-        },
-        "k": 1
+        "a": "Bea",
+        "b": "Owen"
       }
     },
     {
       "id": "clue_C1",
       "owner": "C1",
-      "type": "EXACTLY",
+      "type": "DIFFERENT",
       "params": {
-        "region": {
-          "kind": "row",
-          "row": 1
-        },
-        "k": 1
+        "a": "Clara",
+        "b": "Noah"
       }
     },
     {

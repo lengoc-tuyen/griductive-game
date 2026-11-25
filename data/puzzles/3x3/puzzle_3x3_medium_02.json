@@ -142,8 +142,9 @@
       "type": "EXACTLY",
       "params": {
         "region": {
-          "kind": "neighbors",
-          "of": "A1"
+          "kind": "common_neighbors",
+          "a": "Bea",
+          "b": "Ivy"
         },
         "k": 0
       }
