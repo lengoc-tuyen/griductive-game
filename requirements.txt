@@ -1,2 +1,3 @@
-# Only the Python standard library is used (tkinter for the GUI).
-# On macOS/Homebrew Python, tkinter comes from: brew install python-tk
+# The game and solver use only the Python standard library (GUI is served via http.server).
+# Optional, for data/scripts (experiments & plots):
+#   matplotlib python-sat z3-solver

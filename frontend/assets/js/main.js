@@ -555,6 +555,11 @@ async function handleVerdict(status) {
       recordPuzzleSolved(currentState.puzzle_id, timerSeconds);
       setTimeout(openVictoryModal, 520);
     }
+  } else if (!res.ok) {
+    openErrorModal({
+      customTitle: "Verdict failed",
+      customBody: res.error || res.message || "The server could not process this verdict."
+    });
   } else {
     uiState.newlyRevealed = new Set();
     refreshBoard();
@@ -605,6 +610,11 @@ async function handleHint() {
     uiState.hintStage = support.length > 0 ? 1 : 2;
     uiState.newlyRevealed = new Set();
     refreshBoard();
+  } else if (!res.ok) {
+    openErrorModal({
+      customTitle: "Hint failed",
+      customBody: res.error || res.message || "The server could not compute a hint."
+    });
   } else if (res.outcome === "INCONSISTENT") {
     openErrorModal({
       customTitle: "Contradictory clues",
