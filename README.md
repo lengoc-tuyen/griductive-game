@@ -6,7 +6,7 @@ Griductive Solver (CSC14003 – Project 2): game suy luận lưới, giải bằ
 
 ```
 griductive-game/
-├── main.py                      # entry point → mở GUI
+├── main.py                      # entry point → chạy web server + mở GUI trên trình duyệt
 ├── requirements.txt
 │
 ├── algorithms/                  # A + B + C
@@ -18,7 +18,8 @@ griductive-game/
 │   │   ├── variable_map.py      #   map nhân vật → C_i, biến phụ tách riêng
 │   │   ├── cardinality.py       #   at_least / at_most / exactly → CNF
 │   │   ├── encoder.py           #   clue → clauses, đếm biến/mệnh đề
-│   │   └── evaluator.py         #   evaluator ngữ nghĩa (test chéo, không dùng CNF)
+│   │   ├── evaluator.py         #   evaluator ngữ nghĩa (test chéo, không dùng CNF)
+│   │   └── errors.py            #   lỗi validate clue / region
 │   ├── sat/                     # [B] DPLL SAT solver (4.3)
 │   │   ├── cnf.py               #   container CNF (+ DIMACS)
 │   │   ├── dpll.py              #   unit propagation, conflict, branching, backtrack, assumptions
@@ -33,35 +34,45 @@ griductive-game/
 │   │   ├── hint.py              #   Hint (không đọc lời giải ẩn)
 │   │   └── trace.py             #   deduction trace
 │   └── tests/
-│       ├── test_regions.py               # [A]
-│       ├── test_encoder_vs_evaluator.py  # [A]
+│       ├── fixtures/                     # puzzle mẫu cho test (puzzle_3x3_basic cũng là màn mặc định của game)
+│       ├── helpers.py                    # tiện ích dùng chung cho test
+│       ├── test_regions.py               # [A] region + validate clue
+│       ├── test_encoder.py               # [A] cardinality + encoder
+│       ├── test_encoder_vs_evaluator.py  # [A] encoder ↔ evaluator test chéo
+│       ├── test_extensions.py            # [A] extension clue + region nâng cao
 │       ├── test_dpll.py                  # [B]
-│       └── test_agent.py                 # [C]
+│       ├── test_agent.py                 # [C]
+│       ├── test_frontend_d1.py           # [D] GameEngine, clue_renderer, Web API
+│       └── test_generator.py             # [E] loader, cross-check, generator, benchmark
 │
 ├── frontend/                    # [D] Game & GUI (4.1)
 │   ├── engine/
 │   │   ├── game_engine.py       #   giữ lời giải + clue ẩn, xử lý verdict
 │   │   └── verdict.py           #   ACCEPTED / NOT_PROVABLE / CONTRADICTED
 │   ├── gui/
-│   │   ├── app.py               #   cửa sổ chính
-│   │   ├── board_view.py        #   lưới + tọa độ hàng/cột
-│   │   ├── card_widget.py       #   1 thẻ: tên, nghề, status, clue, highlight
-│   │   ├── controls.py          #   Load / Restart / Hint / Auto Solve / CRIMINAL / INNOCENT
-│   │   ├── clue_renderer.py     #   clue → câu tiếng tự nhiên + ô cần highlight
-│   │   └── messages.py          #   thông báo NOT_PROVABLE / CONTRADICTED, trace
-│   └── assets/
+│   │   ├── app.py               #   web server + REST API (load / restart / verdict / hint / step / auto solve)
+│   │   └── clue_renderer.py     #   clue → câu tự nhiên + ô cần highlight
+│   └── assets/                  #   giao diện web
+│       ├── index.html
+│       ├── css/styles.css
+│       ├── img/
+│       └── js/                  #   api.js (gọi server), board.js (vẽ lưới), main.js (điều khiển), avatars.js
 │
-└── data/                        # [E] Dữ liệu & thực nghiệm (4.5, 4.7)
+└── data/                        # [E] Dữ liệu & thực nghiệm (4.5)
     ├── schema.md                #   định dạng JSON của puzzle
     ├── puzzle_loader.py         #   đọc/ghi JSON → Puzzle
     ├── puzzles/{3x3,4x4,5x5}/   #   bộ puzzle nghiệm duy nhất
+    ├── edge_cases/              #   case STUCK / INCONSISTENT / stress 5x5
     ├── scripts/
+    │   ├── generate_puzzles.py  #   sinh puzzle nghiệm duy nhất
+    │   ├── names_pool.py        #   tên + nghề cho nhân vật
+    │   ├── create_edge_cases.py #   sinh các edge case
+    │   ├── cross_checker.py     #   kiểm tra chéo bằng brute force / PySAT / Z3
     │   ├── verify_puzzles.py    #   kiểm tra duy nhất nghiệm + giải được không đoán
     │   ├── run_experiments.py   #   đo số liệu, ghi cả failure/timeout
     │   └── plot_results.py      #   bảng / biểu đồ
     ├── results/                 #   CSV kết quả
-    ├── figures/                 #   biểu đồ cho report
-    └── demo/                    #   tài liệu video demo
+    └── figures/                 #   biểu đồ cho report
 ```
 
 ## Ranh giới giữa các phần
@@ -74,12 +85,32 @@ griductive-game/
 
 ## Cài đặt & chạy
 
-Chỉ dùng thư viện chuẩn của Python (≥ 3.9); GUI dùng `tkinter`
-(macOS + Homebrew: `brew install python-tk`).
+Yêu cầu Python ≥ 3.9. Game và solver chỉ dùng thư viện chuẩn (GUI là web app chạy bằng `http.server`),
+không cần cài thêm gì. Mọi lệnh đều chạy **từ thư mục gốc** của project.
+
+### Chơi game
 
 ```bash
-python -m unittest discover -s algorithms/tests -t .                 # toàn bộ test A + B + C
-python -m algorithms.tools.manual_gui [path/to/puzzle.json]           # GUI dev để test thuật toán
+python main.py                                    # mở game trên trình duyệt (http://127.0.0.1:5000)
+python main.py data/puzzles/4x4/puzzle_4x4_easy_01.json  # mở sẵn một màn chơi
+python main.py --port 8000 --no-browser           # đổi cổng / không tự mở trình duyệt
+```
+
+### Chạy test
+
+```bash
+python -m unittest discover -s algorithms/tests -t .
+```
+
+### Thực nghiệm (mục 4.5)
+
+Cần cài thêm thư viện tùy chọn: `pip install matplotlib python-sat z3-solver`
+(`python-sat` / `z3-solver` chỉ dùng để kiểm tra chéo; thiếu thì script bỏ qua phần đó).
+
+```bash
+python -m data.scripts.verify_puzzles             # kiểm tra mỗi puzzle có đúng 1 nghiệm
+python -m data.scripts.run_experiments            # đo số liệu → data/results/*.csv
+python -m data.scripts.plot_results               # vẽ biểu đồ → data/figures/
 ```
 
 ## Phần thuật toán (A + B + C) — tóm tắt

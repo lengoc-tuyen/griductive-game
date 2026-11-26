@@ -9,7 +9,7 @@ from algorithms.logic.models import Board, Clue, ClueType, Status
 from algorithms.tests.helpers import FIXTURES, load_fixture
 from frontend.engine.game_engine import GameEngine
 from frontend.engine.verdict import VerdictResult
-from frontend.gui.app import GriductiveWebService, _DEV_CONSOLE_HTML
+from frontend.gui.app import GriductiveWebService
 from frontend.gui.clue_renderer import get_highlight_cells, render_clue_text
 
 PUZZLE_NAME = "puzzle_3x3_basic.json"
@@ -178,15 +178,6 @@ class TestWebServiceAPI(unittest.TestCase):
         self.assertEqual(auto_res["outcome"], "SOLVED")
         self.assertTrue(auto_res["state"]["is_solved"])
         self.assertEqual(len(auto_res["steps"]), 7)
-
-    def test_assets_sample_puzzle_valid(self) -> None:
-        res = self.service.load_puzzle({"path": "frontend/assets/test_3x3_basic.json"})
-        self.assertTrue(res["ok"])
-        self.assertEqual(res["state"]["size"], 3)
-
-    def test_dev_console_html_embedded(self) -> None:
-        self.assertIn("D1 Engine & API Test Console", _DEV_CONSOLE_HTML)
-        self.assertIn("/api/verdict", _DEV_CONSOLE_HTML)
 
 
 if __name__ == "__main__":
